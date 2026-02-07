@@ -1,5 +1,4 @@
-"use client"
-
+import { createFileRoute } from "@tanstack/react-router"
 import { DialogTrigger } from "@/components/ui/dialog"
 
 import React from "react"
@@ -40,6 +39,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+
+export const Route = createFileRoute("/")({
+  component: ScoreTracker,
+})
 
 type Player = {
   id: string
@@ -124,7 +127,7 @@ const generateRandomColor = () => {
   return color
 }
 
-export default function ScoreTracker() {
+function ScoreTracker() {
   const [players, setPlayers] = useState<Player[]>([])
   const [settings, setSettings] = useState<AppSettings>({
     enableTeams: false,
