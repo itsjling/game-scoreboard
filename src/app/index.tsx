@@ -1166,6 +1166,75 @@ function ScoreTracker() {
   )
 }
 
+const SCORE_OPERATORS = ["+", "-", "x", "÷"] as const
+const NUMPAD_KEYS = [
+  ["7", "8", "9", "+"],
+  ["4", "5", "6", "-"],
+  ["1", "2", "3", "x"],
+  ["C", "0", "=", "÷"],
+] as const
+
+const isScoreOperator = (value: string) => SCORE_OPERATORS.includes(value as (typeof SCORE_OPERATORS)[number])
+
+const evaluateScoreExpression = (expression: string): number | null => {
+  const normalized = expression.replace(/\s+/g, "")
+  if (!normalized) return null
+
+  const tokens: (number | string)[] = []
+  let currentNumber = ""
+
+  for (let i = 0; i < normalized.length; i++) {
+    const character = normalized[i]
+
+    if (/\d/.test(character)) {
+      currentNumber += character
+      continue
+    }
+
+    if (isScoreOperator(character)) {
+      if (character === "-" && currentNumber === "" && (tokens.length === 0 || typeof tokens[tokens.length - 1] === "string")) {
+        currentNumber = "-"
+        continue
+      }
+
+      if (currentNumber === "" || currentNumber === "-") return null
+      tokens.push(Number(currentNumber))
+      tokens.push(character)
+      currentNumber = ""
+      continue
+    }
+
+    return null
+  }
+
+  if (currentNumber === "" || currentNumber === "-") return null
+  tokens.push(Number(currentNumber))
+
+  const highPrecedence: (number | string)[] = [tokens[0]]
+  for (let i = 1; i < tokens.length; i += 2) {
+    const operator = tokens[i] as string
+    const value = tokens[i + 1] as number
+
+    if (operator === "x" || operator === "÷") {
+      const previous = highPrecedence.pop() as number
+      if (operator === "÷" && value === 0) return null
+      highPrecedence.push(operator === "x" ? previous * value : previous / value)
+      continue
+    }
+
+    highPrecedence.push(operator, value)
+  }
+
+  let result = highPrecedence[0] as number
+  for (let i = 1; i < highPrecedence.length; i += 2) {
+    const operator = highPrecedence[i] as string
+    const value = highPrecedence[i + 1] as number
+    result = operator === "+" ? result + value : result - value
+  }
+
+  return Number.isFinite(result) ? result : null
+}
+
 function PlayerCard({
   player,
   removePlayer,
@@ -1192,17 +1261,17 @@ function PlayerCard({
   // Get the current score to display using the passed getPlayerScore function
   const displayScore = getPlayerScore(player)
 
-  const [editableScore, setEditableScore] = useState(displayScore.toString())
-  const [isEditing, setIsEditing] = useState(false)
+  const [isNumpadOpen, setIsNumpadOpen] = useState(false)
+  const [expression, setExpression] = useState(displayScore.toString())
 
-  // Update editable score when display score changes
+  // Keep expression synced when score changes while keypad is closed.
   useEffect(() => {
-    setEditableScore(displayScore.toString())
-  }, [displayScore])
+    if (!isNumpadOpen) {
+      setExpression(displayScore.toString())
+    }
+  }, [displayScore, isNumpadOpen])
 
-  const handleScoreSubmit = () => {
-    const newScore = Number.parseInt(editableScore) || 0
-
+  const applyScore = (newScore: number) => {
     if (showPerRoundScores) {
       // Set the exact score for this round
       setExactScore(player.id, newScore)
@@ -1212,8 +1281,39 @@ function PlayerCard({
       const difference = newScore - currentTotal
       updateScore(player.id, difference)
     }
+  }
 
-    setIsEditing(false)
+  const evaluatedScore = evaluateScoreExpression(expression)
+
+  const handleNumpadInput = (key: string) => {
+    if (key === "C") {
+      setExpression("")
+      return
+    }
+
+    if (key === "=") {
+      if (evaluatedScore === null) return
+      applyScore(evaluatedScore)
+      setIsNumpadOpen(false)
+      return
+    }
+
+    if (isScoreOperator(key)) {
+      setExpression((previous) => {
+        if (!previous) return key === "-" ? "-" : previous
+        const lastCharacter = previous[previous.length - 1]
+        if (isScoreOperator(lastCharacter)) {
+          return `${previous.slice(0, -1)}${key}`
+        }
+        return `${previous}${key}`
+      })
+      return
+    }
+
+    setExpression((previous) => {
+      if (previous === "0") return key
+      return `${previous}${key}`
+    })
   }
 
   return (
@@ -1236,35 +1336,57 @@ function PlayerCard({
             <span className="sr-only">Decrease</span>
           </Button>
 
-          {isEditing ? (
-            <form
-              onSubmit={(e) => {
-                e.preventDefault()
-                handleScoreSubmit()
-              }}
-              className="w-16"
-            >
-              <Input
-                type="number"
-                value={editableScore}
-                onChange={(e) => setEditableScore(e.target.value)}
-                className="h-8 text-center p-1"
-                autoFocus
-                onBlur={handleScoreSubmit}
+          <Dialog
+            open={isNumpadOpen}
+            onOpenChange={(open) => {
+              if (!gameStarted) return
+              setIsNumpadOpen(open)
+              if (open) {
+                setExpression(displayScore.toString())
+              }
+            }}
+          >
+            <DialogTrigger asChild>
+              <button
+                type="button"
                 disabled={!gameStarted}
-              />
-            </form>
-          ) : (
-            <div
-              className={cn(
-                "w-10 text-center font-bold rounded px-2 py-1",
-                gameStarted ? "cursor-pointer hover:bg-accent" : "cursor-not-allowed opacity-50",
-              )}
-              onClick={() => gameStarted && setIsEditing(true)}
-            >
-              {displayScore}
-            </div>
-          )}
+                className={cn(
+                  "w-10 text-center font-bold rounded px-2 py-1",
+                  gameStarted ? "cursor-pointer hover:bg-accent" : "cursor-not-allowed opacity-50",
+                )}
+              >
+                {displayScore}
+              </button>
+            </DialogTrigger>
+            <DialogContent className="max-w-xs p-4">
+              <DialogHeader className="space-y-2">
+                <DialogTitle className="text-base">{player.name} Points</DialogTitle>
+                <DialogDescription className="space-y-1">
+                  <div className="rounded-md border px-3 py-2 font-mono text-base text-foreground">
+                    {expression || "0"}
+                  </div>
+                  <div className="text-right text-sm">
+                    Result: <span className="font-medium">{evaluatedScore ?? "Invalid"}</span>
+                  </div>
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="grid grid-cols-4 gap-2">
+                {NUMPAD_KEYS.flat().map((key) => (
+                  <Button
+                    key={key}
+                    type="button"
+                    variant={isScoreOperator(key) || key === "=" ? "secondary" : "outline"}
+                    className="h-11"
+                    onClick={() => handleNumpadInput(key)}
+                    disabled={!gameStarted}
+                  >
+                    {key}
+                  </Button>
+                ))}
+              </div>
+            </DialogContent>
+          </Dialog>
 
           <Button
             variant="outline"
