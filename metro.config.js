@@ -1,6 +1,6 @@
 /* eslint-env node */
 // Learn more https://docs.expo.io/guides/customizing-metro
-const { getDefaultConfig } = require("expo/metro-config");
+import { getDefaultConfig } from "expo/metro-config.js";
 
 /** @type {import('expo/metro-config').MetroConfig} */
 const config = getDefaultConfig(import.meta.dirname);
@@ -28,4 +28,4 @@ config.resolver.unstable_conditionNames = ["require", "default", "browser"];
 // such as Firebase that use the extension cjs.
 config.resolver.sourceExts.push("cjs");
 
-module.exports = config;
+export default config;

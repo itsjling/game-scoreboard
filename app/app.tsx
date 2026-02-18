@@ -2,7 +2,7 @@
 if (__DEV__) {
   require("./devtools/reactotron-config.ts");
 }
-import "./utils/gestureHandler";
+import "./utils/gesture-handler";
 
 import { useFonts } from "expo-font";
 import { createURL } from "expo-linking";
