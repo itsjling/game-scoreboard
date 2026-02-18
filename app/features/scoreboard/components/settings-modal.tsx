@@ -1,193 +1,534 @@
-import { ReactNode } from "react"
-import { Modal, Pressable, ScrollView, Switch, TextInput, View } from "react-native"
+import { ReactNode, useEffect, useState } from "react"
+import { Modal, Pressable, ScrollView, View } from "react-native"
+import {
+  BarChart3,
+  Infinity as InfinityIcon,
+  List,
+  Minus,
+  Plus,
+  RotateCcw,
+  X,
+  type LucideIcon,
+} from "lucide-react-native"
 
-import { BrutalButton, BrutalCard, BrutalSection, BrutalText } from "@/theme/neo-brutal/primitives"
+import { DEFAULT_SETTINGS } from "@/features/scoreboard/constants"
+import { BrutalText } from "@/theme/neo-brutal/primitives"
 import { useNeoBrutalTheme } from "@/theme/neo-brutal/theme"
 
-import type { AppSettings } from "../types"
+import type { AppSettings, SortBy } from "../types"
 
 interface SettingsModalProps {
   visible: boolean
   settings: AppSettings
   onClose: () => void
+  onToggleTeams: (enableTeams: boolean) => void
   onToggleAccumulated: (showPerRound: boolean) => void
-  onChangeSortBy: (value: AppSettings["sortBy"]) => void
+  onChangeSortBy: (value: SortBy) => void
   onChangeNumberOfRounds: (value: number) => void
-  onResetRound: () => void
-  onNewGame: () => void
-  onResetGame: () => void
-  themeMode: "light" | "dark"
-  onChangeThemeMode: (value: "light" | "dark") => void
 }
 
 export function SettingsModal({
   visible,
   settings,
   onClose,
+  onToggleTeams,
   onToggleAccumulated,
-  onChangeSortBy,
   onChangeNumberOfRounds,
-  onResetRound,
-  onNewGame,
-  onResetGame,
-  themeMode,
-  onChangeThemeMode,
+  onChangeSortBy,
 }: SettingsModalProps) {
   const { tokens } = useNeoBrutalTheme()
+  const [draftEnableTeams, setDraftEnableTeams] = useState(settings.enableTeams)
+  const [draftShowPerRound, setDraftShowPerRound] = useState(settings.showPerRoundScores)
+  const [draftNumberOfRounds, setDraftNumberOfRounds] = useState(settings.numberOfRounds)
+  const [draftSortBy, setDraftSortBy] = useState<SortBy>(settings.sortBy)
+
+  useEffect(() => {
+    if (!visible) {
+      return
+    }
+    setDraftEnableTeams(settings.enableTeams)
+    setDraftShowPerRound(settings.showPerRoundScores)
+    setDraftNumberOfRounds(settings.numberOfRounds)
+    setDraftSortBy(settings.sortBy)
+  }, [settings, visible])
+
+  const applyChanges = () => {
+    onToggleTeams(draftEnableTeams)
+    onToggleAccumulated(draftShowPerRound)
+    onChangeNumberOfRounds(draftNumberOfRounds)
+    onChangeSortBy(draftSortBy)
+    onClose()
+  }
+
+  const resetDraft = () => {
+    setDraftEnableTeams(DEFAULT_SETTINGS.enableTeams)
+    setDraftShowPerRound(DEFAULT_SETTINGS.showPerRoundScores)
+    setDraftNumberOfRounds(DEFAULT_SETTINGS.numberOfRounds)
+    setDraftSortBy(DEFAULT_SETTINGS.sortBy)
+  }
 
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+    <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <View
         style={{
           flex: 1,
-          backgroundColor: "rgba(0,0,0,0.45)",
-          justifyContent: "flex-end",
+          backgroundColor: "#DCE1EA",
+          borderWidth: 5,
+          borderColor: "#000000",
         }}
       >
-        <BrutalCard
+        <View
           style={{
-            borderRadius: 0,
-            borderTopLeftRadius: tokens.border.radius,
-            borderTopRightRadius: tokens.border.radius,
-            maxHeight: "85%",
-            backgroundColor: tokens.color.background,
-            gap: tokens.spacing.md,
+            backgroundColor: "#FEE500",
+            borderBottomWidth: 5,
+            borderBottomColor: "#000000",
+            paddingHorizontal: 18,
+            paddingVertical: 16,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
           }}
         >
-          <View
-            style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}
-          >
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
+            <View
+              style={{
+                width: 48,
+                height: 48,
+                borderWidth: 4,
+                borderColor: "#000000",
+                backgroundColor: "#000000",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <BrutalText
+                style={{
+                  fontFamily: tokens.typography.heading,
+                  fontSize: 24,
+                  color: "#FFFFFF",
+                }}
+              >
+                S
+              </BrutalText>
+            </View>
             <BrutalText
               style={{
                 fontFamily: tokens.typography.heading,
-                fontSize: 22,
+                fontSize: 28,
                 textTransform: "uppercase",
               }}
             >
               Settings
             </BrutalText>
-            <BrutalButton label="Close" onPress={onClose} color={tokens.color.surfaceAlt} />
           </View>
+          <IconTile icon={X} onPress={onClose} />
+        </View>
 
-          <ScrollView contentContainerStyle={{ gap: tokens.spacing.md, paddingBottom: 8 }}>
-            <BrutalSection title="Score Display">
-              <Row
-                label="Show accumulated scores"
-                control={
-                  <Switch
-                    value={!settings.showPerRoundScores}
-                    onValueChange={(value) => onToggleAccumulated(!value)}
-                  />
-                }
-              />
-            </BrutalSection>
-
-            <BrutalSection title="Sort Players">
-              <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
-                <BrutalButton
-                  label="Name"
-                  onPress={() => onChangeSortBy("name")}
-                  color={settings.sortBy === "name" ? tokens.color.yellow : tokens.color.surfaceAlt}
-                />
-                <BrutalButton
-                  label="High"
-                  onPress={() => onChangeSortBy("score-desc")}
-                  color={
-                    settings.sortBy === "score-desc" ? tokens.color.yellow : tokens.color.surfaceAlt
-                  }
-                />
-                <BrutalButton
-                  label="Low"
-                  onPress={() => onChangeSortBy("score-asc")}
-                  color={
-                    settings.sortBy === "score-asc" ? tokens.color.yellow : tokens.color.surfaceAlt
-                  }
-                />
-              </View>
-            </BrutalSection>
-
-            <BrutalSection title="Rounds">
-              <BrutalText selectable style={{ fontSize: 13 }}>
-                Number of rounds (0 = unlimited)
-              </BrutalText>
-              <TextInput
-                keyboardType="number-pad"
-                value={String(settings.numberOfRounds)}
-                onChangeText={(value) =>
-                  onChangeNumberOfRounds(Number.parseInt(value || "0", 10) || 0)
-                }
+        <ScrollView
+          contentContainerStyle={{
+            paddingHorizontal: 16,
+            paddingVertical: 16,
+            gap: 18,
+            paddingBottom: 280,
+          }}
+        >
+          <TiltLabel label="Gameplay" />
+          <ShadowCard>
+            <View style={{ gap: 18 }}>
+              <View
                 style={{
-                  borderColor: tokens.color.border,
-                  borderWidth: tokens.border.width,
-                  borderRadius: tokens.border.radius,
-                  backgroundColor: tokens.color.surface,
-                  color: tokens.color.ink,
-                  minHeight: 44,
-                  paddingHorizontal: 12,
-                  fontFamily: tokens.typography.mono,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
                 }}
-              />
-            </BrutalSection>
-
-            <BrutalSection title="Theme">
-              <View style={{ flexDirection: "row", gap: 8 }}>
-                <BrutalButton
-                  label="Light"
-                  onPress={() => onChangeThemeMode("light")}
-                  color={themeMode === "light" ? tokens.color.yellow : tokens.color.surfaceAlt}
-                />
-                <BrutalButton
-                  label="Dark"
-                  onPress={() => onChangeThemeMode("dark")}
-                  color={themeMode === "dark" ? tokens.color.yellow : tokens.color.surfaceAlt}
+              >
+                <View style={{ flex: 1, gap: 8 }}>
+                  <BrutalText style={styles.title(tokens.typography.heading)}>
+                    Enable Teams
+                  </BrutalText>
+                  <Tag text="Group Play" color="#D9CFEA" />
+                </View>
+                <ToggleSquare
+                  value={draftEnableTeams}
+                  onPress={() => setDraftEnableTeams((prev) => !prev)}
                 />
               </View>
-            </BrutalSection>
+            </View>
+          </ShadowCard>
 
-            <BrutalSection title="Danger Zone">
+          <ShadowCard>
+            <View style={{ gap: 18 }}>
               <View style={{ gap: 8 }}>
-                <BrutalButton
-                  label="Reset Round"
-                  onPress={onResetRound}
-                  color={tokens.color.surfaceAlt}
-                />
-                <BrutalButton label="New Game" onPress={onNewGame} color={tokens.color.blue} />
-                <BrutalButton
-                  label="Reset Game"
-                  onPress={onResetGame}
-                  color={tokens.color.red}
-                  textStyle={{ color: tokens.mode === "dark" ? tokens.color.ink : "#121212" }}
-                />
+                <BrutalText style={styles.title(tokens.typography.heading)}>Round Cap</BrutalText>
+                <Tag text="Max Rounds" color="#D7E0EE" />
               </View>
-            </BrutalSection>
-          </ScrollView>
-        </BrutalCard>
+              <View style={{ flexDirection: "row", justifyContent: "flex-end" }}>
+                <View style={{ flexDirection: "row", borderWidth: 4, borderColor: "#000000" }}>
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={() => setDraftNumberOfRounds((prev) => Math.max(0, prev - 1))}
+                    style={[styles.stepButton, { backgroundColor: "#F6F6F6" }]}
+                  >
+                    <Minus size={28} color="#000000" strokeWidth={2.8} />
+                  </Pressable>
+                  <View style={[styles.stepValue, { backgroundColor: "#FEE500" }]}>
+                    {draftNumberOfRounds === 0 ? (
+                      <InfinityIcon size={32} color="#000000" strokeWidth={2.8} />
+                    ) : (
+                      <BrutalText style={styles.stepValueText(tokens.typography.heading)}>
+                        {draftNumberOfRounds}
+                      </BrutalText>
+                    )}
+                  </View>
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={() => setDraftNumberOfRounds((prev) => prev + 1)}
+                    style={[styles.stepButton, { backgroundColor: "#F6F6F6" }]}
+                  >
+                    <Plus size={28} color="#000000" strokeWidth={2.8} />
+                  </Pressable>
+                </View>
+              </View>
+            </View>
+          </ShadowCard>
 
-        <Pressable onPress={onClose} style={{ flex: 1 }} accessibilityRole="button" />
+          <TiltLabel label="Display Mode" />
+          <SelectableModeCard
+            title="Per-round"
+            body="Individual scores for current round."
+            icon={List}
+            selected={draftShowPerRound}
+            onPress={() => setDraftShowPerRound(true)}
+          />
+          <View style={{ marginBottom: 22 }}>
+            <SelectableModeCard
+              title="Total Score"
+              body="Accumulated sum of all rounds."
+              icon={BarChart3}
+              selected={!draftShowPerRound}
+              onPress={() => setDraftShowPerRound(false)}
+            />
+          </View>
+        </ScrollView>
+
+        <View
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            borderTopWidth: 5,
+            borderTopColor: "#000000",
+            backgroundColor: "#E6E6E8",
+            padding: 16,
+            gap: 16,
+          }}
+        >
+          <ShadowButton
+            label="Reset"
+            icon={RotateCcw}
+            color="#F8F8F8"
+            textColor="#000000"
+            onPress={resetDraft}
+          />
+          <ShadowButton
+            label="Save Changes"
+            color="#9850F6"
+            textColor="#F4F4FF"
+            onPress={applyChanges}
+          />
+        </View>
       </View>
     </Modal>
   )
 }
 
-function Row({ label, control }: { label: string; control: ReactNode }) {
+function TiltLabel({ label }: { label: string }) {
   const { tokens } = useNeoBrutalTheme()
 
   return (
     <View
       style={{
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        gap: 12,
+        alignSelf: "flex-start",
+        transform: [{ rotate: "-1.5deg" }],
+        backgroundColor: "#000000",
+        paddingHorizontal: 16,
+        paddingVertical: 8,
       }}
     >
       <BrutalText
-        selectable
-        style={{ fontFamily: tokens.typography.heading, textTransform: "uppercase" }}
+        style={{
+          fontFamily: tokens.typography.heading,
+          fontSize: 18,
+          textTransform: "uppercase",
+          color: "#FFFFFF",
+        }}
       >
         {label}
       </BrutalText>
-      {control}
     </View>
   )
+}
+
+function ShadowCard({ children }: { children: ReactNode }) {
+  return (
+    <View style={{ marginRight: 6, marginBottom: 6 }}>
+      <View
+        style={{
+          position: "absolute",
+          left: 6,
+          top: 6,
+          right: -6,
+          bottom: -6,
+          backgroundColor: "#000000",
+        }}
+      />
+      <View
+        style={{
+          borderWidth: 5,
+          borderColor: "#000000",
+          backgroundColor: "#F2F2F2",
+          paddingHorizontal: 16,
+          paddingVertical: 18,
+        }}
+      >
+        {children}
+      </View>
+    </View>
+  )
+}
+
+function Tag({ text, color }: { text: string; color: string }) {
+  const { tokens } = useNeoBrutalTheme()
+
+  return (
+    <View
+      style={{
+        alignSelf: "flex-start",
+        backgroundColor: color,
+        borderWidth: 1,
+        borderColor: "#000000",
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+      }}
+    >
+      <BrutalText
+        style={{
+          fontFamily: tokens.typography.heading,
+          textTransform: "uppercase",
+          fontSize: 14,
+          color: "#1A1A1A",
+        }}
+      >
+        {text}
+      </BrutalText>
+    </View>
+  )
+}
+
+function ToggleSquare({ value, onPress }: { value: boolean; onPress: () => void }) {
+  return (
+    <Pressable
+      accessibilityRole="switch"
+      accessibilityState={{ checked: value }}
+      onPress={onPress}
+      style={{
+        borderWidth: 4,
+        borderColor: "#000000",
+        width: 102,
+        height: 56,
+        padding: 6,
+        justifyContent: "center",
+        alignItems: value ? "flex-start" : "flex-end",
+        backgroundColor: "#FFFFFF",
+      }}
+    >
+      <View
+        style={{
+          width: 36,
+          height: 36,
+          backgroundColor: "#000000",
+        }}
+      />
+    </Pressable>
+  )
+}
+
+function SelectableModeCard({
+  title,
+  body,
+  icon,
+  selected,
+  onPress,
+}: {
+  title: string
+  body: string
+  icon: LucideIcon
+  selected: boolean
+  onPress: () => void
+}) {
+  const { tokens } = useNeoBrutalTheme()
+  const Icon = icon
+
+  return (
+    <Pressable accessibilityRole="radio" accessibilityState={{ selected }} onPress={onPress}>
+      <ShadowCard>
+        <View style={{ gap: 8 }}>
+          <View
+            style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 14, flex: 1 }}>
+              <View
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderWidth: 4,
+                  borderColor: "#000000",
+                  backgroundColor: selected ? "#000000" : "#FFFFFF",
+                }}
+              />
+              <BrutalText style={styles.title(tokens.typography.heading)}>{title}</BrutalText>
+            </View>
+            <Icon size={28} color="#000000" strokeWidth={2.4} />
+          </View>
+          <BrutalText
+            style={{
+              color: "#454545",
+              fontFamily: tokens.typography.body,
+              fontSize: 14,
+              marginLeft: 54,
+            }}
+          >
+            {body}
+          </BrutalText>
+        </View>
+      </ShadowCard>
+    </Pressable>
+  )
+}
+
+function ShadowButton({
+  label,
+  color,
+  onPress,
+  textColor,
+  icon,
+}: {
+  label: string
+  color: string
+  onPress: () => void
+  textColor: string
+  icon?: LucideIcon
+}) {
+  const { tokens } = useNeoBrutalTheme()
+  const Icon = icon
+
+  return (
+    <View style={{ marginRight: 6, marginBottom: 6 }}>
+      <View
+        style={{
+          position: "absolute",
+          left: 6,
+          top: 6,
+          right: -6,
+          bottom: -6,
+          backgroundColor: "#000000",
+        }}
+      />
+      <Pressable
+        accessibilityRole="button"
+        onPress={onPress}
+        style={{
+          borderWidth: 5,
+          borderColor: "#000000",
+          backgroundColor: color,
+          minHeight: 84,
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "row",
+          gap: 12,
+        }}
+      >
+        {Icon ? <Icon size={20} color={textColor} strokeWidth={2.6} /> : null}
+        <BrutalText
+          style={{
+            fontFamily: tokens.typography.heading,
+            textTransform: "uppercase",
+            fontSize: 22,
+            color: textColor,
+          }}
+        >
+          {label}
+        </BrutalText>
+      </Pressable>
+    </View>
+  )
+}
+
+function IconTile({ icon, onPress }: { icon: LucideIcon; onPress: () => void }) {
+  const Icon = icon
+
+  return (
+    <View style={{ marginRight: 4, marginBottom: 4 }}>
+      <View
+        style={{
+          position: "absolute",
+          left: 4,
+          top: 4,
+          right: -4,
+          bottom: -4,
+          backgroundColor: "#000000",
+        }}
+      />
+      <Pressable
+        onPress={onPress}
+        accessibilityRole="button"
+        style={{
+          width: 72,
+          height: 72,
+          borderWidth: 5,
+          borderColor: "#000000",
+          backgroundColor: "#F8F8F8",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Icon size={32} color="#000000" strokeWidth={2.8} />
+      </Pressable>
+    </View>
+  )
+}
+
+const styles = {
+  title: (font: string) =>
+    ({
+      fontFamily: font,
+      textTransform: "uppercase",
+      fontSize: 20,
+      color: "#000000",
+    }) as const,
+  stepButton: {
+    width: 86,
+    height: 76,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRightWidth: 4,
+    borderRightColor: "#000000",
+  } as const,
+  stepValue: {
+    minWidth: 120,
+    height: 76,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRightWidth: 4,
+    borderRightColor: "#000000",
+    paddingHorizontal: 14,
+  } as const,
+  stepValueText: (font: string) =>
+    ({
+      fontFamily: font,
+      fontSize: 24,
+      color: "#000000",
+      textTransform: "uppercase",
+    }) as const,
 }

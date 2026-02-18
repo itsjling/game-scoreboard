@@ -1,16 +1,11 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Pressable, View, useWindowDimensions } from "react-native"
 
-import {
-  BrutalButton,
-  BrutalInput,
-  BrutalText,
-  ColorDot,
-  ScorePill,
-} from "@/theme/neo-brutal/primitives"
+import { BrutalText } from "@/theme/neo-brutal/primitives"
 import { useNeoBrutalTheme } from "@/theme/neo-brutal/theme"
 
 import type { Player } from "../types"
+import { ScoreEditModal } from "./score-edit-modal"
 
 interface PlayerCardProps {
   player: Player
@@ -18,7 +13,8 @@ interface PlayerCardProps {
   gameStarted: boolean
   onIncrement: (playerId: string, delta: number) => void
   onSetExactScore: (playerId: string, score: number) => void
-  onRemove: (playerId: string) => void
+  _onRemove: (playerId: string) => void
+  _onStartEditing?: (playerId: string) => void
 }
 
 export function PlayerCard({
@@ -27,111 +23,212 @@ export function PlayerCard({
   gameStarted,
   onIncrement,
   onSetExactScore,
-  onRemove,
+  _onRemove,
+  _onStartEditing,
 }: PlayerCardProps) {
   const { tokens } = useNeoBrutalTheme()
   const { width } = useWindowDimensions()
   const isCompact = width < 430
 
-  const [editingScore, setEditingScore] = useState(String(displayScore))
-  const [isEditing, setIsEditing] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
 
-  useEffect(() => {
-    setEditingScore(String(displayScore))
-  }, [displayScore])
+  const handleOpenEdit = () => {
+    if (gameStarted) {
+      setShowEditModal(true)
+      _onStartEditing?.(player.id)
+    }
+  }
 
-  const submitScore = () => {
-    const parsed = Number.parseInt(editingScore, 10)
-    onSetExactScore(player.id, Number.isFinite(parsed) ? parsed : 0)
-    setIsEditing(false)
+  const handleApplyScore = (newScore: number) => {
+    onSetExactScore(player.id, newScore)
+    setShowEditModal(false)
   }
 
   return (
-    <View
-      style={{
-        borderLeftWidth: 8,
-        borderLeftColor: player.color,
-        paddingLeft: 12,
-        paddingVertical: 10,
-        borderBottomWidth: 1,
-        borderBottomColor: tokens.color.border,
-        gap: 0,
-      }}
-    >
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 8, paddingBottom: 10 }}>
-        <ColorDot color={player.color} />
-        <BrutalText
-          selectable
-          style={{
-            fontFamily: tokens.typography.heading,
-            fontSize: 16,
-            textTransform: "uppercase",
-            flex: 1,
-          }}
-        >
-          {player.name}
-        </BrutalText>
-      </View>
-
+    <>
       <View
         style={{
-          flexDirection: isCompact ? "column" : "row",
-          alignItems: isCompact ? "stretch" : "center",
-          gap: 0,
+          marginBottom: 16,
+          marginRight: 5,
         }}
       >
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 0, flexWrap: "wrap" }}>
-          <BrutalButton
-            label="-1"
-            accessibilityLabel={`Decrease ${player.name} score`}
-            onPress={() => onIncrement(player.id, -1)}
-            disabled={!gameStarted}
-            color={tokens.color.surfaceAlt}
-            style={{ minWidth: 50, marginRight: 0 }}
-          />
+        {/* Shadow */}
+        <View
+          style={{
+            position: "absolute",
+            top: 5,
+            left: 5,
+            right: -5,
+            bottom: -5,
+            backgroundColor: "#000000",
+          }}
+        />
 
-          {isEditing ? (
-            <BrutalInput
-              value={editingScore}
-              autoFocus
-              keyboardType="number-pad"
-              returnKeyType="done"
-              onChangeText={setEditingScore}
-              onSubmitEditing={submitScore}
-              onBlur={submitScore}
-              style={{ width: 76, textAlign: "center", fontFamily: tokens.typography.mono }}
-            />
-          ) : (
+        <View
+          style={{
+            borderWidth: 4,
+            borderColor: "#000000",
+            backgroundColor: player.color,
+          }}
+        >
+          {/* Header Row */}
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              padding: 12,
+              gap: 12,
+            }}
+          >
+            {/* Avatar */}
+            <View
+              style={{
+                width: 56,
+                height: 56,
+                borderWidth: 4,
+                borderColor: "#000000",
+                backgroundColor: "#FFFFFF",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <BrutalText
+                style={{
+                  fontSize: 28,
+                  fontFamily: tokens.typography.heading,
+                }}
+              >
+                {player.name.charAt(0).toUpperCase() || "?"}
+              </BrutalText>
+            </View>
+
+            {/* Name */}
+            <View style={{ flex: 1 }}>
+              <BrutalText
+                style={{
+                  fontFamily: tokens.typography.heading,
+                  fontSize: 20,
+                  textTransform: "uppercase",
+                  color: "#000000",
+                }}
+              >
+                {player.name}
+              </BrutalText>
+            </View>
+
+            {/* Score */}
+            <BrutalText
+              style={{
+                fontFamily: tokens.typography.heading,
+                fontSize: isCompact ? 40 : 48,
+                color: "#000000",
+                fontVariant: ["tabular-nums"],
+              }}
+            >
+              {displayScore}
+            </BrutalText>
+          </View>
+
+          {/* Score Controls Row */}
+          <View
+            style={{
+              flexDirection: "row",
+              borderTopWidth: 4,
+              borderTopColor: "#000000",
+              backgroundColor: "#FFFFFF",
+            }}
+          >
+            {/* Minus Button */}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Decrease ${player.name} score`}
+              onPress={() => onIncrement(player.id, -1)}
+              disabled={!gameStarted}
+              style={{
+                flex: 1,
+                paddingVertical: 16,
+                alignItems: "center",
+                justifyContent: "center",
+                borderRightWidth: 2,
+                borderRightColor: "#000000",
+                opacity: gameStarted ? 1 : 0.3,
+              }}
+            >
+              <BrutalText
+                style={{
+                  fontFamily: tokens.typography.heading,
+                  fontSize: 28,
+                  color: "#000000",
+                }}
+              >
+                −
+              </BrutalText>
+            </Pressable>
+
+            {/* Score Display */}
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={`Edit ${player.name} score`}
-              onPress={() => gameStarted && setIsEditing(true)}
-              style={{ opacity: gameStarted ? 1 : 0.45 }}
+              onPress={handleOpenEdit}
+              disabled={!gameStarted}
+              style={{
+                flex: 2,
+                paddingVertical: 16,
+                alignItems: "center",
+                justifyContent: "center",
+                borderRightWidth: 2,
+                borderRightColor: "#000000",
+                opacity: gameStarted ? 1 : 0.3,
+              }}
             >
-              <ScorePill value={displayScore} />
+              <BrutalText
+                style={{
+                  fontFamily: tokens.typography.heading,
+                  fontSize: 28,
+                  color: "#000000",
+                  fontVariant: ["tabular-nums"],
+                }}
+              >
+                {displayScore}
+              </BrutalText>
             </Pressable>
-          )}
 
-          <BrutalButton
-            label="+1"
-            accessibilityLabel={`Increase ${player.name} score`}
-            onPress={() => onIncrement(player.id, 1)}
-            disabled={!gameStarted}
-            color={tokens.color.surfaceAlt}
-            style={{ minWidth: 50, marginLeft: 0 }}
-          />
+            {/* Plus Button */}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Increase ${player.name} score`}
+              onPress={() => onIncrement(player.id, 1)}
+              disabled={!gameStarted}
+              style={{
+                flex: 1,
+                paddingVertical: 16,
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: gameStarted ? 1 : 0.3,
+              }}
+            >
+              <BrutalText
+                style={{
+                  fontFamily: tokens.typography.heading,
+                  fontSize: 28,
+                  color: "#000000",
+                }}
+              >
+                +
+              </BrutalText>
+            </Pressable>
+          </View>
         </View>
-
-        <BrutalButton
-          label="Del"
-          accessibilityLabel={`Remove ${player.name}`}
-          onPress={() => onRemove(player.id)}
-          disabled={gameStarted}
-          color={tokens.color.red}
-          style={{ minWidth: 56, alignSelf: isCompact ? "flex-end" : "auto" }}
-          textStyle={{ color: tokens.mode === "dark" ? tokens.color.ink : "#121212" }}
-        />
       </View>
-    </View>
+
+      {/* Score Edit Modal */}
+      <ScoreEditModal
+        visible={showEditModal}
+        player={player}
+        currentScore={displayScore}
+        onClose={() => setShowEditModal(false)}
+        onApply={handleApplyScore}
+      />
+    </>
   )
 }

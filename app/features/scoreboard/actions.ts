@@ -36,6 +36,14 @@ export const scoreboardActions = {
     type: "add-player",
     payload: { name, color, teamId },
   }),
+  setPlayerName: (playerId: string, name: string): ScoreboardAction => ({
+    type: "set-player-name",
+    payload: { playerId, name },
+  }),
+  setPlayerColor: (playerId: string, color: string): ScoreboardAction => ({
+    type: "set-player-color",
+    payload: { playerId, color },
+  }),
   removePlayer: (playerId: string): ScoreboardAction => ({
     type: "remove-player",
     payload: { playerId },

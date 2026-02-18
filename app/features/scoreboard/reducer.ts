@@ -166,9 +166,6 @@ export function scoreboardReducer(
 
     case "add-player": {
       const name = action.payload.name.trim()
-      if (!name) {
-        return state
-      }
 
       const player: Player = {
         id: createEntityId("player"),
@@ -186,6 +183,32 @@ export function scoreboardReducer(
         players: [...active.players, player],
       })
     }
+
+    case "set-player-name":
+      return withActiveGame(state, {
+        ...active,
+        players: active.players.map((player) =>
+          player.id === action.payload.playerId
+            ? {
+                ...player,
+                name: action.payload.name,
+              }
+            : player,
+        ),
+      })
+
+    case "set-player-color":
+      return withActiveGame(state, {
+        ...active,
+        players: active.players.map((player) =>
+          player.id === action.payload.playerId
+            ? {
+                ...player,
+                color: action.payload.color,
+              }
+            : player,
+        ),
+      })
 
     case "remove-player":
       return withActiveGame(state, {

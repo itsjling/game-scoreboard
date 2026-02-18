@@ -62,6 +62,8 @@ export type ScoreboardAction =
   | { type: "set-number-of-rounds"; payload: { numberOfRounds: number } }
   | { type: "set-show-per-round-scores"; payload: { showPerRoundScores: boolean } }
   | { type: "add-player"; payload: { name: string; color: string; teamId: string | null } }
+  | { type: "set-player-name"; payload: { playerId: string; name: string } }
+  | { type: "set-player-color"; payload: { playerId: string; color: string } }
   | { type: "remove-player"; payload: { playerId: string } }
   | { type: "set-player-team"; payload: { playerId: string; teamId: string | null } }
   | { type: "increment-player-score"; payload: { playerId: string; delta: number } }

@@ -2,6 +2,18 @@ import { fireEvent, render } from "@testing-library/react-native"
 
 import { ScoreboardScreen } from "@/features/scoreboard/components/scoreboard-screen"
 
+jest.mock("lucide-react-native", () => {
+  const React = require("react")
+  const { Text } = require("react-native")
+  return new Proxy(
+    {},
+    {
+      get: (_, iconName: string) => (props: any) =>
+        React.createElement(Text, props, String(iconName)),
+    },
+  )
+})
+
 jest.mock("@/components/Screen", () => {
   const { View } = require("react-native")
   return {
@@ -64,12 +76,12 @@ jest.mock("@/theme/neo-brutal/theme", () => ({
 
 describe("ScoreboardScreen", () => {
   it("adds a player in edit mode", () => {
-    const { getByLabelText, getAllByText, getByText } = render(<ScoreboardScreen />)
+    const { getByLabelText, getByDisplayValue, getByText } = render(<ScoreboardScreen />)
 
-    fireEvent.changeText(getByLabelText("Player name"), "Alex")
-    fireEvent.press(getAllByText("Add")[0])
+    fireEvent.press(getByText("Add Player"))
+    fireEvent.changeText(getByLabelText("Player name 1"), "Alex")
 
-    expect(getByText("Alex")).toBeTruthy()
+    expect(getByDisplayValue("Alex")).toBeTruthy()
   })
 
   it("renders start game action", () => {
