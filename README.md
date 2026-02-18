@@ -1,30 +1,74 @@
-# Card game score app
+# Game Scoreboard (Ignite + React Native)
 
-*Automatically synced with your [v0.dev](https://v0.dev) deployments*
+Neo-brutalist scoreboard app rebuilt with Ignite (React Native) for iOS, Android, and web.
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/justin-lings-projects/v0-card-game-score-app)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.dev-black?style=for-the-badge)](https://v0.dev/chat/projects/k0RDepXzxny)
+## Features
 
-## Overview
+- Player and team score tracking
+- Per-round and accumulated score modes
+- Round navigation with optional max rounds
+- Start/Edit game workflow
+- Game history with load/delete/clear
+- Local-only persistence (`scoreboard.v2.state`)
+- Light and dark neo-brutalist themes
+- Cross-platform analytics via PostHog (no-op when env vars are missing)
 
-This repository will stay in sync with your deployed chats on [v0.dev](https://v0.dev).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.dev](https://v0.dev).
+## Tech Stack
 
-## Deployment
+- Ignite 11.4.0
+- Expo / React Native
+- React Navigation
+- MMKV persistence
+- Jest + React Native Testing Library
+- Maestro smoke flow
 
-Your project is live at:
+## Environment Variables
 
-**[https://vercel.com/justin-lings-projects/v0-card-game-score-app](https://vercel.com/justin-lings-projects/v0-card-game-score-app)**
+Set these for analytics:
 
-## Build your app
+- `EXPO_PUBLIC_POSTHOG_KEY`
+- `EXPO_PUBLIC_POSTHOG_HOST`
 
-Continue building your app on:
+If unset, analytics calls are skipped safely.
 
-**[https://v0.dev/chat/projects/k0RDepXzxny](https://v0.dev/chat/projects/k0RDepXzxny)**
+## Development
 
-## How It Works
+```bash
+pnpm install
+pnpm start
+```
 
-1. Create and modify your project using [v0.dev](https://v0.dev)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+### Run on platforms
+
+```bash
+pnpm ios
+pnpm android
+pnpm web
+```
+
+## Testing
+
+```bash
+pnpm test
+pnpm compile
+pnpm test:maestro
+```
+
+## Web Deployment
+
+Generate web output for Vercel:
+
+```bash
+pnpm bundle:web
+```
+
+Deploy the generated `dist` directory to Vercel.
+
+## Key Paths
+
+- Domain logic: `app/features/scoreboard/`
+- Scoreboard UI: `app/features/scoreboard/components/`
+- Neo-brutalist design system: `app/theme/neo-brutal/`
+- Analytics wrapper: `app/services/analytics/`
+- Behavior archive: `docs/parity-spec.md`
+- Maestro smoke flow: `maestro/scoreboard-smoke.yaml`

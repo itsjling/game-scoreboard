@@ -1,0 +1,13 @@
+appId: com.justinling.gamescoreboard
+---
+- launchApp
+- assertVisible: "Start Game"
+- assertVisible: "Settings"
+- assertVisible: "History"
+- tapOn: "Player name"
+- inputText: "Alex"
+- tapOn: "Add"
+- assertVisible: "Alex"
+- tapOn: "Start Game"
+- assertVisible: "Edit Game"
+- tapOn: "+1"
