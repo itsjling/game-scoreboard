@@ -1,7 +1,7 @@
-import type { AppSettings } from "./types"
+import type { AppSettings } from "./types";
 
-export const SCOREBOARD_SCHEMA_VERSION = 2 as const
-export const SCOREBOARD_STORAGE_KEY = "scoreboard.v2.state"
+export const SCOREBOARD_SCHEMA_VERSION = 2 as const;
+export const SCOREBOARD_STORAGE_KEY = "scoreboard.v2.state";
 
 export const DEFAULT_SETTINGS: AppSettings = {
   enableTeams: false,
@@ -9,7 +9,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   numberOfRounds: 0,
   currentRound: 1,
   showPerRoundScores: true,
-}
+};
 
 export const BRUTAL_ACCENT_COLORS = [
   "#FF3B30",
@@ -18,4 +18,4 @@ export const BRUTAL_ACCENT_COLORS = [
   "#34C759",
   "#FF9F0A",
   "#BF5AF2",
-] as const
+] as const;

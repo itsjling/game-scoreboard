@@ -1,4 +1,4 @@
-import { Translations } from "./en"
+import type { Translations } from "./en";
 
 const ko: Translations = {
   common: {
@@ -21,10 +21,11 @@ const ko: Translations = {
   emptyStateComponent: {
     generic: {
       heading: "너무 텅 비어서.. 너무 슬퍼요..",
-      content: "데이터가 없습니다. 버튼을 눌러서 리프레쉬 하시거나 앱을 리로드하세요.",
+      content:
+        "데이터가 없습니다. 버튼을 눌러서 리프레쉬 하시거나 앱을 리로드하세요.",
       button: "다시 시도해봅시다",
     },
   },
-}
+};
 
-export default ko
+export default ko;

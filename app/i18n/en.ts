@@ -19,11 +19,12 @@ const en = {
   emptyStateComponent: {
     generic: {
       heading: "So empty... so sad",
-      content: "No data found yet. Try clicking the button to refresh or reload the app.",
+      content:
+        "No data found yet. Try clicking the button to refresh or reload the app.",
       button: "Let's try this again",
     },
   },
-}
+};
 
-export default en
-export type Translations = typeof en
+export default en;
+export type Translations = typeof en;

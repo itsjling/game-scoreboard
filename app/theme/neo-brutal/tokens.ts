@@ -1,42 +1,42 @@
-export type NeoBrutalMode = "light" | "dark"
+export type NeoBrutalMode = "light" | "dark";
 
 export interface NeoBrutalTokens {
-  mode: NeoBrutalMode
-  color: {
-    background: string
-    surface: string
-    surfaceAlt: string
-    ink: string
-    mutedInk: string
-    border: string
-    danger: string
-    red: string
-    yellow: string
-    blue: string
-    green: string
-    purple: string
-  }
   border: {
-    width: number
-    radius: number
-  }
-  typography: {
-    heading: string
-    body: string
-    mono: string
-  }
+    width: number;
+    radius: number;
+  };
+  color: {
+    background: string;
+    surface: string;
+    surfaceAlt: string;
+    ink: string;
+    mutedInk: string;
+    border: string;
+    danger: string;
+    red: string;
+    yellow: string;
+    blue: string;
+    green: string;
+    purple: string;
+  };
+  mode: NeoBrutalMode;
   spacing: {
-    xs: number
-    sm: number
-    md: number
-    lg: number
-    xl: number
-  }
+    xs: number;
+    sm: number;
+    md: number;
+    lg: number;
+    xl: number;
+  };
+  typography: {
+    heading: string;
+    body: string;
+    mono: string;
+  };
 }
 
-const headingFont = "geistBold"
-const bodyFont = "geistRegular"
-const monoFont = "geistSemiBold"
+const headingFont = "geistBold";
+const bodyFont = "geistRegular";
+const monoFont = "geistSemiBold";
 
 export const neoBrutalLightTokens: NeoBrutalTokens = {
   mode: "light",
@@ -70,7 +70,7 @@ export const neoBrutalLightTokens: NeoBrutalTokens = {
     lg: 22,
     xl: 30,
   },
-}
+};
 
 export const neoBrutalDarkTokens: NeoBrutalTokens = {
   mode: "dark",
@@ -104,4 +104,4 @@ export const neoBrutalDarkTokens: NeoBrutalTokens = {
     lg: 22,
     xl: 30,
   },
-}
+};

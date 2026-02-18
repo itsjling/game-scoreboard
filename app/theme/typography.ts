@@ -1,14 +1,14 @@
 // TODO: write documentation about fonts and typography along with guides on how to add custom fonts in own
 // markdown file and add links from here
 
-import { Platform } from "react-native"
 import {
-  Geist_300Light as geistLight,
-  Geist_400Regular as geistRegular,
-  Geist_500Medium as geistMedium,
-  Geist_600SemiBold as geistSemiBold,
   Geist_700Bold as geistBold,
-} from "@expo-google-fonts/geist"
+  Geist_300Light as geistLight,
+  Geist_500Medium as geistMedium,
+  Geist_400Regular as geistRegular,
+  Geist_600SemiBold as geistSemiBold,
+} from "@expo-google-fonts/geist";
+import { Platform } from "react-native";
 
 export const customFontsToLoad = {
   geistLight,
@@ -16,7 +16,7 @@ export const customFontsToLoad = {
   geistMedium,
   geistSemiBold,
   geistBold,
-}
+};
 
 const fonts = {
   geist: {
@@ -49,7 +49,7 @@ const fonts = {
     // Android only font.
     normal: "monospace",
   },
-}
+};
 
 export const typography = {
   /**
@@ -63,9 +63,12 @@ export const typography = {
   /**
    * An alternate font used for perhaps titles and stuff.
    */
-  secondary: Platform.select({ ios: fonts.helveticaNeue, android: fonts.sansSerif }),
+  secondary: Platform.select({
+    ios: fonts.helveticaNeue,
+    android: fonts.sansSerif,
+  }),
   /**
    * Lets get fancy with a monospace font!
    */
   code: Platform.select({ ios: fonts.courier, android: fonts.monospace }),
-}
+};

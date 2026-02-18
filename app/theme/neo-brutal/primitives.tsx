@@ -1,24 +1,26 @@
-import { ReactNode } from "react"
+import type { ReactNode } from "react";
 import {
   Pressable,
-  PressableProps,
-  StyleProp,
+  type PressableProps,
+  type StyleProp,
   StyleSheet,
   Text,
   TextInput,
-  TextInputProps,
-  TextProps,
-  TextStyle,
+  type TextInputProps,
+  type TextProps,
+  type TextStyle,
   View,
-  ViewProps,
-  ViewStyle,
-} from "react-native"
+  type ViewProps,
+  type ViewStyle,
+} from "react-native";
 
-import { useNeoBrutalTheme } from "./theme"
+import { useNeoBrutalTheme } from "./theme";
+
+const HEX_COLOR_REGEX = /^[0-9a-fA-F]{6}$/;
 
 interface BrutalCardProps extends ViewProps {
-  outlined?: boolean
-  compact?: boolean
+  compact?: boolean;
+  outlined?: boolean;
 }
 
 export function BrutalCard({
@@ -27,13 +29,15 @@ export function BrutalCard({
   compact = false,
   ...props
 }: BrutalCardProps) {
-  const { tokens } = useNeoBrutalTheme()
+  const { tokens } = useNeoBrutalTheme();
   return (
     <View
       {...props}
       style={[
         {
-          backgroundColor: outlined ? tokens.color.surfaceAlt : tokens.color.surface,
+          backgroundColor: outlined
+            ? tokens.color.surfaceAlt
+            : tokens.color.surface,
           borderColor: tokens.color.border,
           borderWidth: outlined ? tokens.border.width : 0,
           borderRadius: tokens.border.radius,
@@ -42,25 +46,36 @@ export function BrutalCard({
         style,
       ]}
     />
-  )
+  );
 }
 
 export interface BrutalButtonProps extends Omit<PressableProps, "style"> {
-  label: string
-  color?: string
-  style?: StyleProp<ViewStyle>
-  textStyle?: StyleProp<TextStyle>
+  color?: string;
+  label: string;
+  style?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
 }
 
-export function BrutalButton({ label, style, color, textStyle, ...props }: BrutalButtonProps) {
-  const { tokens } = useNeoBrutalTheme()
-  const fill = color ?? tokens.color.yellow
-  const labelColor = getReadableTextColor(fill, tokens.color.ink, tokens.color.background)
+export function BrutalButton({
+  label,
+  style,
+  color,
+  textStyle,
+  ...props
+}: BrutalButtonProps) {
+  const { tokens } = useNeoBrutalTheme();
+  const fill = color ?? tokens.color.yellow;
+  const labelColor = getReadableTextColor(
+    fill,
+    tokens.color.ink,
+    tokens.color.background
+  );
 
   return (
     <Pressable
       accessibilityRole="button"
       {...props}
+      disabled={props.disabled}
       style={({ pressed }) => [
         {
           borderWidth: 0,
@@ -75,7 +90,6 @@ export function BrutalButton({ label, style, color, textStyle, ...props }: Bruta
         },
         style,
       ]}
-      disabled={props.disabled}
     >
       <Text
         style={[
@@ -92,11 +106,15 @@ export function BrutalButton({ label, style, color, textStyle, ...props }: Bruta
         {label}
       </Text>
     </Pressable>
-  )
+  );
 }
 
-export function BrutalInput({ style, placeholderTextColor, ...props }: TextInputProps) {
-  const { tokens } = useNeoBrutalTheme()
+export function BrutalInput({
+  style,
+  placeholderTextColor,
+  ...props
+}: TextInputProps) {
+  const { tokens } = useNeoBrutalTheme();
   return (
     <TextInput
       {...props}
@@ -116,21 +134,24 @@ export function BrutalInput({ style, placeholderTextColor, ...props }: TextInput
         style,
       ]}
     />
-  )
+  );
 }
 
 export function BrutalText({ style, ...props }: TextProps) {
-  const { tokens } = useNeoBrutalTheme()
+  const { tokens } = useNeoBrutalTheme();
   return (
     <Text
       {...props}
-      style={[{ color: tokens.color.ink, fontFamily: tokens.typography.body }, style]}
+      style={[
+        { color: tokens.color.ink, fontFamily: tokens.typography.body },
+        style,
+      ]}
     />
-  )
+  );
 }
 
 export function BrutalHeading({ style, ...props }: TextProps) {
-  const { tokens } = useNeoBrutalTheme()
+  const { tokens } = useNeoBrutalTheme();
   return (
     <Text
       {...props}
@@ -145,11 +166,17 @@ export function BrutalHeading({ style, ...props }: TextProps) {
         style,
       ]}
     />
-  )
+  );
 }
 
-export function ScorePill({ value, style }: { value: number; style?: StyleProp<ViewStyle> }) {
-  const { tokens } = useNeoBrutalTheme()
+export function ScorePill({
+  value,
+  style,
+}: {
+  value: number;
+  style?: StyleProp<ViewStyle>;
+}) {
+  const { tokens } = useNeoBrutalTheme();
   return (
     <View
       style={[
@@ -167,7 +194,7 @@ export function ScorePill({ value, style }: { value: number; style?: StyleProp<V
           color: getReadableTextColor(
             tokens.color.yellow,
             tokens.color.ink,
-            tokens.color.background,
+            tokens.color.background
           ),
           fontSize: 17,
           fontVariant: ["tabular-nums"],
@@ -177,7 +204,7 @@ export function ScorePill({ value, style }: { value: number; style?: StyleProp<V
         {value}
       </Text>
     </View>
-  )
+  );
 }
 
 export function ColorDot({ color }: { color: string }) {
@@ -190,11 +217,17 @@ export function ColorDot({ color }: { color: string }) {
         backgroundColor: color,
       }}
     />
-  )
+  );
 }
 
-export function BrutalSection({ title, children }: { title: string; children: ReactNode }) {
-  const { tokens } = useNeoBrutalTheme()
+export function BrutalSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
+  const { tokens } = useNeoBrutalTheme();
   return (
     <BrutalCard compact style={{ gap: tokens.spacing.xs }}>
       <BrutalText
@@ -210,7 +243,7 @@ export function BrutalSection({ title, children }: { title: string; children: Re
       </BrutalText>
       {children}
     </BrutalCard>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -222,17 +255,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 8,
   },
-})
+});
 
 function getReadableTextColor(background: string, dark: string, light: string) {
-  const hex = background.replace("#", "")
-  if (!/^[0-9a-fA-F]{6}$/.test(hex)) {
-    return dark
+  const hex = background.replace("#", "");
+  if (!HEX_COLOR_REGEX.test(hex)) {
+    return dark;
   }
 
-  const r = Number.parseInt(hex.slice(0, 2), 16) / 255
-  const g = Number.parseInt(hex.slice(2, 4), 16) / 255
-  const b = Number.parseInt(hex.slice(4, 6), 16) / 255
-  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
-  return luminance < 0.58 ? light : dark
+  const r = Number.parseInt(hex.slice(0, 2), 16) / 255;
+  const g = Number.parseInt(hex.slice(2, 4), 16) / 255;
+  const b = Number.parseInt(hex.slice(4, 6), 16) / 255;
+  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return luminance < 0.58 ? light : dark;
 }

@@ -8,6 +8,7 @@ export const analyticsEvents = {
   historyLoadedGame: "history_loaded_game",
   historyDeletedGame: "history_deleted_game",
   historyCleared: "history_cleared",
-} as const
+} as const;
 
-export type AnalyticsEventName = (typeof analyticsEvents)[keyof typeof analyticsEvents]
+export type AnalyticsEventName =
+  (typeof analyticsEvents)[keyof typeof analyticsEvents];

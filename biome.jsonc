@@ -1,0 +1,34 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "extends": ["ultracite/biome/core", "ultracite/biome/react"],
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on",
+        "useSortedAttributes": "on",
+        "useSortedKeys": "off",
+        "useSortedProperties": "on"
+      }
+    }
+  },
+  "javascript": {
+    "globals": [
+      "__DEV__",
+      "jest",
+      "describe",
+      "it",
+      "expect",
+      "beforeEach",
+      "afterEach",
+      "vi"
+    ]
+  },
+  "overrides": [
+    {
+      "includes": ["types/**"],
+      "linter": {
+        "enabled": false
+      }
+    }
+  ]
+}

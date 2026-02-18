@@ -1,22 +1,22 @@
-import { useState } from "react"
-import { Pressable, View } from "react-native"
+import { useState } from "react";
+import { Pressable, View } from "react-native";
 
-import { BrutalText } from "@/theme/neo-brutal/primitives"
-import { useNeoBrutalTheme } from "@/theme/neo-brutal/theme"
+import { BrutalText } from "@/theme/neo-brutal/primitives";
+import { useNeoBrutalTheme } from "@/theme/neo-brutal/theme";
 
-import type { Player } from "../types"
-import { ScoreEditModal } from "./score-edit-modal"
+import type { Player } from "../types";
+import { ScoreEditModal } from "./score-edit-modal";
 
 interface TeamSectionProps {
-  title: string
-  color: string
-  totalScore: number
-  players: Player[]
-  displayScoreById: Record<string, number>
-  gameStarted: boolean
-  onIncrement: (playerId: string, delta: number) => void
-  onSetExactScore: (playerId: string, score: number) => void
-  _onRemove: (playerId: string) => void
+  _onRemove: (playerId: string) => void;
+  color: string;
+  displayScoreById: Record<string, number>;
+  gameStarted: boolean;
+  onIncrement: (playerId: string, delta: number) => void;
+  onSetExactScore: (playerId: string, score: number) => void;
+  players: Player[];
+  title: string;
+  totalScore: number;
 }
 
 export function TeamSection({
@@ -30,7 +30,7 @@ export function TeamSection({
   onSetExactScore,
   _onRemove,
 }: TeamSectionProps) {
-  const { tokens } = useNeoBrutalTheme()
+  const { tokens } = useNeoBrutalTheme();
 
   return (
     <View style={{ marginBottom: 16 }}>
@@ -127,25 +127,25 @@ export function TeamSection({
       <View style={{ paddingHorizontal: 12, gap: 8 }}>
         {players.map((player) => (
           <TeamPlayerRow
-            key={player.id}
-            player={player}
             displayScore={displayScoreById[player.id] ?? 0}
             gameStarted={gameStarted}
+            key={player.id}
             onIncrement={onIncrement}
             onSetExactScore={onSetExactScore}
+            player={player}
           />
         ))}
       </View>
     </View>
-  )
+  );
 }
 
 interface TeamPlayerRowProps {
-  player: Player
-  displayScore: number
-  gameStarted: boolean
-  onIncrement: (playerId: string, delta: number) => void
-  onSetExactScore: (playerId: string, score: number) => void
+  displayScore: number;
+  gameStarted: boolean;
+  onIncrement: (playerId: string, delta: number) => void;
+  onSetExactScore: (playerId: string, score: number) => void;
+  player: Player;
 }
 
 function TeamPlayerRow({
@@ -155,19 +155,19 @@ function TeamPlayerRow({
   onIncrement,
   onSetExactScore,
 }: TeamPlayerRowProps) {
-  const { tokens } = useNeoBrutalTheme()
-  const [showEditModal, setShowEditModal] = useState(false)
+  const { tokens } = useNeoBrutalTheme();
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const handleOpenEdit = () => {
     if (gameStarted) {
-      setShowEditModal(true)
+      setShowEditModal(true);
     }
-  }
+  };
 
   const handleApplyScore = (newScore: number) => {
-    onSetExactScore(player.id, newScore)
-    setShowEditModal(false)
-  }
+    onSetExactScore(player.id, newScore);
+    setShowEditModal(false);
+  };
 
   return (
     <>
@@ -238,10 +238,10 @@ function TeamPlayerRow({
 
           {/* Minus Button */}
           <Pressable
-            accessibilityRole="button"
             accessibilityLabel={`Decrease ${player.name} score`}
-            onPress={() => onIncrement(player.id, -1)}
+            accessibilityRole="button"
             disabled={!gameStarted}
+            onPress={() => onIncrement(player.id, -1)}
             style={{
               paddingHorizontal: 16,
               paddingVertical: 20,
@@ -263,10 +263,10 @@ function TeamPlayerRow({
 
           {/* Score Display */}
           <Pressable
-            accessibilityRole="button"
             accessibilityLabel={`Edit ${player.name} score`}
-            onPress={handleOpenEdit}
+            accessibilityRole="button"
             disabled={!gameStarted}
+            onPress={handleOpenEdit}
             style={{
               paddingHorizontal: 20,
               paddingVertical: 20,
@@ -289,10 +289,10 @@ function TeamPlayerRow({
 
           {/* Plus Button */}
           <Pressable
-            accessibilityRole="button"
             accessibilityLabel={`Increase ${player.name} score`}
-            onPress={() => onIncrement(player.id, 1)}
+            accessibilityRole="button"
             disabled={!gameStarted}
+            onPress={() => onIncrement(player.id, 1)}
             style={{
               paddingHorizontal: 16,
               paddingVertical: 20,
@@ -317,12 +317,12 @@ function TeamPlayerRow({
 
       {/* Score Edit Modal */}
       <ScoreEditModal
-        visible={showEditModal}
-        player={player}
         currentScore={displayScore}
-        onClose={() => setShowEditModal(false)}
         onApply={handleApplyScore}
+        onClose={() => setShowEditModal(false)}
+        player={player}
+        visible={showEditModal}
       />
     </>
-  )
+  );
 }

@@ -1,18 +1,18 @@
-import { MMKV } from "react-native-mmkv"
+import { MMKV } from "react-native-mmkv";
 
-export const storage = new MMKV()
+const mmkv = new MMKV();
 
 /**
  * Loads a string from storage.
  *
  * @param key The key to fetch.
  */
-export function loadString(key: string): string | null {
+function loadString(key: string): string | null {
   try {
-    return storage.getString(key) ?? null
+    return mmkv.getString(key) ?? null;
   } catch {
     // not sure why this would fail... even reading the RN docs I'm unclear
-    return null
+    return null;
   }
 }
 
@@ -22,12 +22,12 @@ export function loadString(key: string): string | null {
  * @param key The key to fetch.
  * @param value The value to store.
  */
-export function saveString(key: string, value: string): boolean {
+function saveString(key: string, value: string): boolean {
   try {
-    storage.set(key, value)
-    return true
+    mmkv.set(key, value);
+    return true;
   } catch {
-    return false
+    return false;
   }
 }
 
@@ -36,13 +36,13 @@ export function saveString(key: string, value: string): boolean {
  *
  * @param key The key to fetch.
  */
-export function load<T>(key: string): T | null {
-  let almostThere: string | null = null
+function load<T>(key: string): T | null {
+  let almostThere: string | null = null;
   try {
-    almostThere = loadString(key)
-    return JSON.parse(almostThere ?? "") as T
+    almostThere = loadString(key);
+    return JSON.parse(almostThere ?? "") as T;
   } catch {
-    return (almostThere as T) ?? null
+    return (almostThere as T) ?? null;
   }
 }
 
@@ -52,12 +52,12 @@ export function load<T>(key: string): T | null {
  * @param key The key to fetch.
  * @param value The value to store.
  */
-export function save(key: string, value: unknown): boolean {
+function save(key: string, value: unknown): boolean {
   try {
-    saveString(key, JSON.stringify(value))
-    return true
+    saveString(key, JSON.stringify(value));
+    return true;
   } catch {
-    return false
+    return false;
   }
 }
 
@@ -66,17 +66,33 @@ export function save(key: string, value: unknown): boolean {
  *
  * @param key The key to kill.
  */
-export function remove(key: string): void {
+function remove(key: string): void {
   try {
-    storage.delete(key)
-  } catch {}
+    mmkv.delete(key);
+  } catch {
+    // Silently ignore deletion errors
+  }
 }
 
 /**
  * Burn it all to the ground.
  */
-export function clear(): void {
+function clear(): void {
   try {
-    storage.clearAll()
-  } catch {}
+    mmkv.clearAll();
+  } catch {
+    // Silently ignore clear errors
+  }
 }
+
+export const storage = {
+  loadString,
+  saveString,
+  load,
+  save,
+  remove,
+  clear,
+  storage: mmkv,
+};
+
+export { loadString, saveString, load, save, remove, clear };

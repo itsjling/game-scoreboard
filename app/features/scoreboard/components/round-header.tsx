@@ -1,18 +1,18 @@
-import { Pressable, View } from "react-native"
+import { Pressable, View } from "react-native";
 
-import { BrutalText } from "@/theme/neo-brutal/primitives"
-import { useNeoBrutalTheme } from "@/theme/neo-brutal/theme"
+import { BrutalText } from "@/theme/neo-brutal/primitives";
+import { useNeoBrutalTheme } from "@/theme/neo-brutal/theme";
 
 interface RoundHeaderProps {
-  currentRound: number
-  numberOfRounds: number
-  _canGoPrevious: boolean
-  _canGoNext: boolean
-  isTeamMode?: boolean
-  _onPreviousRound: () => void
-  _onNextRound: () => void
-  onShowHistory?: () => void
-  onClose?: () => void
+  _canGoNext: boolean;
+  _canGoPrevious: boolean;
+  _onNextRound: () => void;
+  _onPreviousRound: () => void;
+  currentRound: number;
+  isTeamMode?: boolean;
+  numberOfRounds: number;
+  onClose?: () => void;
+  onShowHistory?: () => void;
 }
 
 export function RoundHeader({
@@ -26,7 +26,7 @@ export function RoundHeader({
   onShowHistory,
   onClose,
 }: RoundHeaderProps) {
-  const { tokens } = useNeoBrutalTheme()
+  const { tokens } = useNeoBrutalTheme();
 
   return (
     <View
@@ -40,8 +40,8 @@ export function RoundHeader({
     >
       {/* Close/Back Button */}
       <Pressable
-        accessibilityRole="button"
         accessibilityLabel="Close game"
+        accessibilityRole="button"
         onPress={onClose}
         style={{
           width: 50,
@@ -105,8 +105,8 @@ export function RoundHeader({
 
       {/* History Button */}
       <Pressable
-        accessibilityRole="button"
         accessibilityLabel="Show history"
+        accessibilityRole="button"
         onPress={onShowHistory}
         style={{
           width: 50,
@@ -129,7 +129,7 @@ export function RoundHeader({
         </BrutalText>
       </Pressable>
     </View>
-  )
+  );
 }
 
 export function RoundNavigation({
@@ -138,12 +138,12 @@ export function RoundNavigation({
   onPreviousRound,
   onNextRound,
 }: {
-  canGoPrevious: boolean
-  canGoNext: boolean
-  onPreviousRound: () => void
-  onNextRound: () => void
+  canGoPrevious: boolean;
+  canGoNext: boolean;
+  onPreviousRound: () => void;
+  onNextRound: () => void;
 }) {
-  const { tokens } = useNeoBrutalTheme()
+  const { tokens } = useNeoBrutalTheme();
 
   return (
     <View
@@ -156,10 +156,10 @@ export function RoundNavigation({
     >
       {/* Previous Button */}
       <Pressable
-        accessibilityRole="button"
         accessibilityLabel="Previous round"
-        onPress={onPreviousRound}
+        accessibilityRole="button"
         disabled={!canGoPrevious}
+        onPress={onPreviousRound}
         style={{
           flex: 1,
           borderWidth: 4,
@@ -196,10 +196,10 @@ export function RoundNavigation({
 
       {/* Next Button */}
       <Pressable
-        accessibilityRole="button"
         accessibilityLabel="Next round"
-        onPress={onNextRound}
+        accessibilityRole="button"
         disabled={!canGoNext}
+        onPress={onNextRound}
         style={{
           flex: 1,
           borderWidth: 4,
@@ -234,5 +234,5 @@ export function RoundNavigation({
         </BrutalText>
       </Pressable>
     </View>
-  )
+  );
 }

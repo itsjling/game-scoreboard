@@ -1,4 +1,4 @@
-import { Translations } from "./en"
+import type { Translations } from "./en";
 
 const ar: Translations = {
   common: {
@@ -21,10 +21,11 @@ const ar: Translations = {
   emptyStateComponent: {
     generic: {
       heading: "فارغة جداً....حزين",
-      content: "لا توجد بيانات حتى الآن. حاول النقر فوق الزر لتحديث التطبيق او اعادة تحميله.",
+      content:
+        "لا توجد بيانات حتى الآن. حاول النقر فوق الزر لتحديث التطبيق او اعادة تحميله.",
       button: "لنحاول هذا مرّة أخرى",
     },
   },
-}
+};
 
-export default ar
+export default ar;

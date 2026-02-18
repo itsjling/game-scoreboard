@@ -1,24 +1,25 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react"
-import { Modal, Pressable, View } from "react-native"
+import type React from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Modal, Pressable, View } from "react-native";
 
-import { BrutalText } from "@/theme/neo-brutal/primitives"
-import { useNeoBrutalTheme } from "@/theme/neo-brutal/theme"
+import { BrutalText } from "@/theme/neo-brutal/primitives";
+import { useNeoBrutalTheme } from "@/theme/neo-brutal/theme";
 
-import type { Player } from "../types"
+import type { Player } from "../types";
 
 interface ScoreEditModalProps {
-  visible: boolean
-  player: Player
-  currentScore: number
-  onClose: () => void
-  onApply: (newScore: number) => void
+  currentScore: number;
+  onApply: (newScore: number) => void;
+  onClose: () => void;
+  player: Player;
+  visible: boolean;
 }
 
-type Operator = "+" | "-" | "×" | "÷"
+type Operator = "+" | "-" | "×" | "÷";
 
 interface Operation {
-  operator: Operator
-  value: number
+  operator: Operator;
+  value: number;
 }
 
 export function ScoreEditModal({
@@ -28,128 +29,132 @@ export function ScoreEditModal({
   onClose,
   onApply,
 }: ScoreEditModalProps) {
-  const { tokens } = useNeoBrutalTheme()
+  const { tokens } = useNeoBrutalTheme();
 
   // Completed operations (e.g., [{operator: "x", value: 2}])
-  const [operations, setOperations] = useState<Operation[]>([])
+  const [operations, setOperations] = useState<Operation[]>([]);
   // The operator waiting for input (e.g., after pressing "+")
-  const [pendingOperator, setPendingOperator] = useState<Operator | null>(null)
+  const [pendingOperator, setPendingOperator] = useState<Operator | null>(null);
   // Current number being typed
-  const [inputValue, setInputValue] = useState<string>("")
+  const [inputValue, setInputValue] = useState<string>("");
 
   // Reset state when modal opens
   useEffect(() => {
     if (visible) {
-      setOperations([])
-      setPendingOperator(null)
-      setInputValue("")
+      setOperations([]);
+      setPendingOperator(null);
+      setInputValue("");
     }
-  }, [visible])
+  }, [visible]);
 
   // Calculate the final result based on all staged operations
   const calculatedValue = useMemo(() => {
-    let result = currentScore
+    let result = currentScore;
 
     // Include the pending input if there is one
-    const allOperations = [...operations]
+    const allOperations = [...operations];
     if (pendingOperator && inputValue) {
       allOperations.push({
         operator: pendingOperator,
         value: Number.parseInt(inputValue, 10) || 0,
-      })
+      });
     }
 
     for (const op of allOperations) {
       switch (op.operator) {
         case "+":
-          result += op.value
-          break
+          result += op.value;
+          break;
         case "-":
-          result -= op.value
-          break
+          result -= op.value;
+          break;
         case "×":
-          result *= op.value
-          break
+          result *= op.value;
+          break;
         case "÷":
           if (op.value !== 0) {
-            result = Math.floor(result / op.value)
+            result = Math.floor(result / op.value);
           }
-          break
+          break;
+        default:
+          break;
       }
     }
 
-    return result
-  }, [currentScore, operations, pendingOperator, inputValue])
+    return result;
+  }, [currentScore, operations, pendingOperator, inputValue]);
 
   const handleNumberPress = useCallback((num: string) => {
-    setInputValue((prev) => prev + num)
-  }, [])
+    setInputValue((prev) => prev + num);
+  }, []);
 
   const handleOperatorPress = useCallback(
     (op: Operator) => {
       if (inputValue) {
         // Complete the pending operation with the input value
-        const value = Number.parseInt(inputValue, 10) || 0
+        const value = Number.parseInt(inputValue, 10) || 0;
         if (pendingOperator) {
-          setOperations((prev) => [...prev, { operator: pendingOperator, value }])
+          setOperations((prev) => [
+            ...prev,
+            { operator: pendingOperator, value },
+          ]);
         }
-        setInputValue("")
-        setPendingOperator(op)
+        setInputValue("");
+        setPendingOperator(op);
       } else if (pendingOperator) {
         // Change the pending operator
-        setPendingOperator(op)
+        setPendingOperator(op);
       } else {
         // First operator pressed
-        setPendingOperator(op)
+        setPendingOperator(op);
       }
     },
-    [inputValue, pendingOperator],
-  )
+    [inputValue, pendingOperator]
+  );
 
   const handleClear = useCallback(() => {
-    setInputValue("")
-    setOperations([])
-    setPendingOperator(null)
-  }, [])
+    setInputValue("");
+    setOperations([]);
+    setPendingOperator(null);
+  }, []);
 
   const handleBackspace = useCallback(() => {
     if (inputValue.length > 0) {
       // Delete last digit of current input
-      const newValue = inputValue.slice(0, -1)
-      setInputValue(newValue)
+      const newValue = inputValue.slice(0, -1);
+      setInputValue(newValue);
     } else if (pendingOperator) {
       // Remove the pending operator and restore the last operation if any
-      setPendingOperator(null)
+      setPendingOperator(null);
       if (operations.length > 0) {
-        const lastOp = operations[operations.length - 1]
-        setOperations((prev) => prev.slice(0, -1))
-        setPendingOperator(lastOp.operator)
-        setInputValue(String(lastOp.value))
+        const lastOp = operations.at(-1);
+        setOperations((prev) => prev.slice(0, -1));
+        setPendingOperator(lastOp.operator);
+        setInputValue(String(lastOp.value));
       }
     } else if (operations.length > 0) {
       // Remove the last completed operation and restore as pending
-      const lastOp = operations[operations.length - 1]
-      setOperations((prev) => prev.slice(0, -1))
-      setPendingOperator(lastOp.operator)
-      setInputValue(String(lastOp.value))
+      const lastOp = operations.at(-1);
+      setOperations((prev) => prev.slice(0, -1));
+      setPendingOperator(lastOp.operator);
+      setInputValue(String(lastOp.value));
     }
-  }, [inputValue, pendingOperator, operations])
+  }, [inputValue, pendingOperator, operations]);
 
   const handleApply = useCallback(() => {
-    onApply(calculatedValue)
-  }, [calculatedValue, onApply])
+    onApply(calculatedValue);
+  }, [calculatedValue, onApply]);
 
   const renderCalcButton = (
     label: string,
     onPress: () => void,
-    color: string = "#FFFFFF",
-    flex: number = 1,
-    testID?: string,
+    color = "#FFFFFF",
+    flex = 1,
+    testID?: string
   ) => (
     <Pressable
-      accessibilityRole="button"
       accessibilityLabel={testID || label}
-      testID={testID || `calc-button-${label}`}
+      accessibilityRole="button"
       onPress={onPress}
       style={{
         flex,
@@ -161,6 +166,7 @@ export function ScoreEditModal({
         justifyContent: "center",
         margin: -2,
       }}
+      testID={testID || `calc-button-${label}`}
     >
       <BrutalText
         style={{
@@ -172,11 +178,11 @@ export function ScoreEditModal({
         {label}
       </BrutalText>
     </Pressable>
-  )
+  );
 
   // Build the display expression
   const buildExpression = () => {
-    const parts: React.ReactElement[] = []
+    const parts: React.ReactElement[] = [];
 
     // Always show starting score
     parts.push(
@@ -190,8 +196,8 @@ export function ScoreEditModal({
         }}
       >
         {currentScore}
-      </BrutalText>,
-    )
+      </BrutalText>
+    );
 
     // Show all completed operations
     operations.forEach((op, index) => {
@@ -206,8 +212,8 @@ export function ScoreEditModal({
         >
           {" "}
           {op.operator}{" "}
-        </BrutalText>,
-      )
+        </BrutalText>
+      );
       parts.push(
         <BrutalText
           key={`val-${index}-${op.value}`}
@@ -219,9 +225,9 @@ export function ScoreEditModal({
           }}
         >
           {op.value}
-        </BrutalText>,
-      )
-    })
+        </BrutalText>
+      );
+    });
 
     // Show pending operator and input
     if (pendingOperator) {
@@ -236,11 +242,11 @@ export function ScoreEditModal({
         >
           {" "}
           {pendingOperator}{" "}
-        </BrutalText>,
-      )
+        </BrutalText>
+      );
 
       // Show input value (underlined if being typed)
-      const displayValue = inputValue || ""
+      const displayValue = inputValue || "";
       parts.push(
         <BrutalText
           key="input"
@@ -253,23 +259,34 @@ export function ScoreEditModal({
           }}
         >
           {displayValue}
-        </BrutalText>,
-      )
+        </BrutalText>
+      );
     }
 
     return (
-      <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "flex-end" }}>
+      <View
+        style={{
+          flexDirection: "row",
+          flexWrap: "wrap",
+          justifyContent: "flex-end",
+        }}
+      >
         {parts}
       </View>
-    )
-  }
+    );
+  };
 
   // Show preview calculation
-  const hasOperations = operations.length > 0 || pendingOperator !== null
-  const showPreview = hasOperations && calculatedValue !== currentScore
+  const hasOperations = operations.length > 0 || pendingOperator !== null;
+  const showPreview = hasOperations && calculatedValue !== currentScore;
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal
+      animationType="fade"
+      onRequestClose={onClose}
+      transparent
+      visible={visible}
+    >
       <View
         style={{
           flex: 1,
@@ -311,7 +328,6 @@ export function ScoreEditModal({
 
           {/* Display */}
           <View
-            testID="calc-display"
             style={{
               backgroundColor: "#FFFFFF",
               padding: 20,
@@ -321,6 +337,7 @@ export function ScoreEditModal({
               minHeight: 100,
               justifyContent: "center",
             }}
+            testID="calc-display"
           >
             {buildExpression()}
 
@@ -344,42 +361,137 @@ export function ScoreEditModal({
           <View>
             {/* Row 1: 7 8 9 / */}
             <View style={{ flexDirection: "row" }}>
-              {renderCalcButton("7", () => handleNumberPress("7"), "#FFFFFF", 1, "btn-7")}
-              {renderCalcButton("8", () => handleNumberPress("8"), "#FFFFFF", 1, "btn-8")}
-              {renderCalcButton("9", () => handleNumberPress("9"), "#FFFFFF", 1, "btn-9")}
-              {renderCalcButton("/", () => handleOperatorPress("÷"), "#59C7E8", 1, "btn-divide")}
+              {renderCalcButton(
+                "7",
+                () => handleNumberPress("7"),
+                "#FFFFFF",
+                1,
+                "btn-7"
+              )}
+              {renderCalcButton(
+                "8",
+                () => handleNumberPress("8"),
+                "#FFFFFF",
+                1,
+                "btn-8"
+              )}
+              {renderCalcButton(
+                "9",
+                () => handleNumberPress("9"),
+                "#FFFFFF",
+                1,
+                "btn-9"
+              )}
+              {renderCalcButton(
+                "/",
+                () => handleOperatorPress("÷"),
+                "#59C7E8",
+                1,
+                "btn-divide"
+              )}
             </View>
 
             {/* Row 2: 4 5 6 × */}
             <View style={{ flexDirection: "row" }}>
-              {renderCalcButton("4", () => handleNumberPress("4"), "#FFFFFF", 1, "btn-4")}
-              {renderCalcButton("5", () => handleNumberPress("5"), "#FFFFFF", 1, "btn-5")}
-              {renderCalcButton("6", () => handleNumberPress("6"), "#FFFFFF", 1, "btn-6")}
-              {renderCalcButton("×", () => handleOperatorPress("×"), "#90EE90", 1, "btn-multiply")}
+              {renderCalcButton(
+                "4",
+                () => handleNumberPress("4"),
+                "#FFFFFF",
+                1,
+                "btn-4"
+              )}
+              {renderCalcButton(
+                "5",
+                () => handleNumberPress("5"),
+                "#FFFFFF",
+                1,
+                "btn-5"
+              )}
+              {renderCalcButton(
+                "6",
+                () => handleNumberPress("6"),
+                "#FFFFFF",
+                1,
+                "btn-6"
+              )}
+              {renderCalcButton(
+                "×",
+                () => handleOperatorPress("×"),
+                "#90EE90",
+                1,
+                "btn-multiply"
+              )}
             </View>
 
             {/* Row 3: 1 2 3 - */}
             <View style={{ flexDirection: "row" }}>
-              {renderCalcButton("1", () => handleNumberPress("1"), "#FFFFFF", 1, "btn-1")}
-              {renderCalcButton("2", () => handleNumberPress("2"), "#FFFFFF", 1, "btn-2")}
-              {renderCalcButton("3", () => handleNumberPress("3"), "#FFFFFF", 1, "btn-3")}
-              {renderCalcButton("-", () => handleOperatorPress("-"), "#59C7E8", 1, "btn-subtract")}
+              {renderCalcButton(
+                "1",
+                () => handleNumberPress("1"),
+                "#FFFFFF",
+                1,
+                "btn-1"
+              )}
+              {renderCalcButton(
+                "2",
+                () => handleNumberPress("2"),
+                "#FFFFFF",
+                1,
+                "btn-2"
+              )}
+              {renderCalcButton(
+                "3",
+                () => handleNumberPress("3"),
+                "#FFFFFF",
+                1,
+                "btn-3"
+              )}
+              {renderCalcButton(
+                "-",
+                () => handleOperatorPress("-"),
+                "#59C7E8",
+                1,
+                "btn-subtract"
+              )}
             </View>
 
             {/* Row 4: C 0 ⌫ + */}
             <View style={{ flexDirection: "row" }}>
               {renderCalcButton("C", handleClear, "#FFFFFF", 1, "btn-clear")}
-              {renderCalcButton("0", () => handleNumberPress("0"), "#FFFFFF", 1, "btn-0")}
-              {renderCalcButton("⌫", handleBackspace, "#FFFFFF", 1, "btn-backspace")}
-              {renderCalcButton("+", () => handleOperatorPress("+"), "#90EE90", 1, "btn-add")}
+              {renderCalcButton(
+                "0",
+                () => handleNumberPress("0"),
+                "#FFFFFF",
+                1,
+                "btn-0"
+              )}
+              {renderCalcButton(
+                "⌫",
+                handleBackspace,
+                "#FFFFFF",
+                1,
+                "btn-backspace"
+              )}
+              {renderCalcButton(
+                "+",
+                () => handleOperatorPress("+"),
+                "#90EE90",
+                1,
+                "btn-add"
+              )}
             </View>
           </View>
 
           {/* Action Buttons */}
-          <View style={{ flexDirection: "row", borderTopWidth: 4, borderTopColor: "#000000" }}>
+          <View
+            style={{
+              flexDirection: "row",
+              borderTopWidth: 4,
+              borderTopColor: "#000000",
+            }}
+          >
             <Pressable
               accessibilityRole="button"
-              testID="btn-cancel"
               onPress={onClose}
               style={{
                 flex: 1,
@@ -390,6 +502,7 @@ export function ScoreEditModal({
                 borderRightWidth: 2,
                 borderRightColor: "#000000",
               }}
+              testID="btn-cancel"
             >
               <BrutalText
                 style={{
@@ -405,7 +518,6 @@ export function ScoreEditModal({
 
             <Pressable
               accessibilityRole="button"
-              testID="btn-apply"
               onPress={handleApply}
               style={{
                 flex: 1,
@@ -414,6 +526,7 @@ export function ScoreEditModal({
                 alignItems: "center",
                 justifyContent: "center",
               }}
+              testID="btn-apply"
             >
               <BrutalText
                 style={{
@@ -430,5 +543,5 @@ export function ScoreEditModal({
         </View>
       </View>
     </Modal>
-  )
+  );
 }

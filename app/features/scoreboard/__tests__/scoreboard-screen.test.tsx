@@ -1,40 +1,44 @@
-import { fireEvent, render } from "@testing-library/react-native"
+import { fireEvent, render } from "@testing-library/react-native";
 
-import { ScoreboardScreen } from "@/features/scoreboard/components/scoreboard-screen"
+import { ScoreboardScreen } from "@/features/scoreboard/components/scoreboard-screen";
 
 jest.mock("lucide-react-native", () => {
-  const React = require("react")
-  const { Text } = require("react-native")
+  const React = require("react");
+  const { Text } = require("react-native");
   return new Proxy(
     {},
     {
       get: (_, iconName: string) => (props: any) =>
         React.createElement(Text, props, String(iconName)),
-    },
-  )
-})
+    }
+  );
+});
 
-jest.mock("@/components/Screen", () => {
-  const { View } = require("react-native")
+jest.mock("@/components/screen", () => {
+  const { View } = require("react-native");
   return {
-    Screen: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
-  }
-})
+    Screen: ({ children }: { children: React.ReactNode }) => (
+      <View>{children}</View>
+    ),
+  };
+});
 
 jest.mock("@/features/scoreboard/persistence", () => ({
   loadScoreboardState: jest.fn(() => {
-    const { createInitialScoreboardState } = require("@/features/scoreboard/reducer")
-    return createInitialScoreboardState()
+    const {
+      createInitialScoreboardState,
+    } = require("@/features/scoreboard/reducer");
+    return createInitialScoreboardState();
   }),
   saveScoreboardState: jest.fn(() => true),
-}))
+}));
 
 jest.mock("@/services/analytics/posthog-client", () => ({
   analytics: {
     init: jest.fn(),
     capture: jest.fn(),
   },
-}))
+}));
 
 jest.mock("@/theme/neo-brutal/theme", () => ({
   useNeoBrutalTheme: () => ({
@@ -72,20 +76,22 @@ jest.mock("@/theme/neo-brutal/theme", () => ({
       },
     },
   }),
-}))
+}));
 
 describe("ScoreboardScreen", () => {
   it("adds a player in edit mode", () => {
-    const { getByLabelText, getByDisplayValue, getByText } = render(<ScoreboardScreen />)
+    const { getByLabelText, getByDisplayValue, getByText } = render(
+      <ScoreboardScreen />
+    );
 
-    fireEvent.press(getByText("Add Player"))
-    fireEvent.changeText(getByLabelText("Player name 1"), "Alex")
+    fireEvent.press(getByText("Add Player"));
+    fireEvent.changeText(getByLabelText("Player name 1"), "Alex");
 
-    expect(getByDisplayValue("Alex")).toBeTruthy()
-  })
+    expect(getByDisplayValue("Alex")).toBeTruthy();
+  });
 
   it("renders start game action", () => {
-    const { getByText } = render(<ScoreboardScreen />)
-    expect(getByText("Start Game")).toBeTruthy()
-  })
-})
+    const { getByText } = render(<ScoreboardScreen />);
+    expect(getByText("Start Game")).toBeTruthy();
+  });
+});

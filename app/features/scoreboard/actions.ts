@@ -1,4 +1,4 @@
-import type { ScoreboardAction, ScoreboardState, SortBy } from "./types"
+import type { ScoreboardAction, ScoreboardState, SortBy } from "./types";
 
 export const scoreboardActions = {
   hydrate: (payload: ScoreboardState): ScoreboardAction => ({
@@ -32,7 +32,11 @@ export const scoreboardActions = {
     type: "set-show-per-round-scores",
     payload: { showPerRoundScores },
   }),
-  addPlayer: (name: string, color: string, teamId: string | null): ScoreboardAction => ({
+  addPlayer: (
+    name: string,
+    color: string,
+    teamId: string | null
+  ): ScoreboardAction => ({
     type: "add-player",
     payload: { name, color, teamId },
   }),
@@ -48,11 +52,17 @@ export const scoreboardActions = {
     type: "remove-player",
     payload: { playerId },
   }),
-  setPlayerTeam: (playerId: string, teamId: string | null): ScoreboardAction => ({
+  setPlayerTeam: (
+    playerId: string,
+    teamId: string | null
+  ): ScoreboardAction => ({
     type: "set-player-team",
     payload: { playerId, teamId },
   }),
-  incrementPlayerScore: (playerId: string, delta: number): ScoreboardAction => ({
+  incrementPlayerScore: (
+    playerId: string,
+    delta: number
+  ): ScoreboardAction => ({
     type: "increment-player-score",
     payload: { playerId, delta },
   }),
@@ -86,4 +96,4 @@ export const scoreboardActions = {
     type: "set-selected-history-game",
     payload: { gameId },
   }),
-}
+};

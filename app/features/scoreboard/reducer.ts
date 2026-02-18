@@ -1,12 +1,12 @@
-import { DEFAULT_SETTINGS, SCOREBOARD_SCHEMA_VERSION } from "./constants"
-import { createEntityId, generateGameName } from "./name-generator"
+import { DEFAULT_SETTINGS, SCOREBOARD_SCHEMA_VERSION } from "./constants";
+import { createEntityId, generateGameName } from "./name-generator";
 import {
   getHistoryGameById,
   getPlayerDisplayScore,
   getPlayersByTeam,
   getSortedPlayers,
   getTeamColor,
-} from "./selectors"
+} from "./selectors";
 import type {
   ActiveGame,
   AppSettings,
@@ -14,10 +14,10 @@ import type {
   Player,
   ScoreboardAction,
   ScoreboardState,
-} from "./types"
+} from "./types";
 
 function createInitialActiveGame(): ActiveGame {
-  const gameId = createEntityId("game")
+  const gameId = createEntityId("game");
   return {
     id: gameId,
     name: generateGameName(),
@@ -26,7 +26,7 @@ function createInitialActiveGame(): ActiveGame {
     teams: [],
     settings: { ...DEFAULT_SETTINGS },
     started: false,
-  }
+  };
 }
 
 export function createInitialScoreboardState(): ScoreboardState {
@@ -37,17 +37,20 @@ export function createInitialScoreboardState(): ScoreboardState {
       selectedHistoryGameId: null,
     },
     schemaVersion: SCOREBOARD_SCHEMA_VERSION,
-  }
+  };
 }
 
 function ensureScoreLength(player: Player, currentRound: number): Player {
   if (player.scores.length >= currentRound) {
-    return player
+    return player;
   }
   return {
     ...player,
-    scores: [...player.scores, ...Array(currentRound - player.scores.length).fill(0)],
-  }
+    scores: [
+      ...player.scores,
+      ...new Array(currentRound - player.scores.length).fill(0),
+    ],
+  };
 }
 
 function snapshotFromActiveGame(game: ActiveGame): GameSnapshot {
@@ -58,67 +61,73 @@ function snapshotFromActiveGame(game: ActiveGame): GameSnapshot {
     players: game.players,
     teams: game.teams,
     settings: game.settings,
-  }
+  };
 }
 
-function upsertHistory(history: GameSnapshot[], snapshot: GameSnapshot): GameSnapshot[] {
-  const index = history.findIndex((entry) => entry.id === snapshot.id)
+function upsertHistory(
+  history: GameSnapshot[],
+  snapshot: GameSnapshot
+): GameSnapshot[] {
+  const index = history.findIndex((entry) => entry.id === snapshot.id);
   if (index >= 0) {
-    const clone = [...history]
-    clone[index] = snapshot
-    return clone
+    const clone = [...history];
+    clone[index] = snapshot;
+    return clone;
   }
-  return [...history, snapshot]
+  return [...history, snapshot];
 }
 
-function withActiveGame(state: ScoreboardState, activeGame: ActiveGame): ScoreboardState {
+function withActiveGame(
+  state: ScoreboardState,
+  activeGame: ActiveGame
+): ScoreboardState {
   return {
     ...state,
     activeGame,
-  }
+  };
 }
 
 function computeDisplayDelta(
   players: Player[],
   settings: AppSettings,
   playerId: string,
-  targetScore: number,
+  targetScore: number
 ): number {
-  const player = players.find((entry) => entry.id === playerId)
+  const player = players.find((entry) => entry.id === playerId);
   if (!player) {
-    return 0
+    return 0;
   }
-  const currentDisplayScore = getPlayerDisplayScore(player, settings)
-  return targetScore - currentDisplayScore
+  const currentDisplayScore = getPlayerDisplayScore(player, settings);
+  return targetScore - currentDisplayScore;
 }
 
 export function scoreboardReducer(
   state: ScoreboardState,
-  action: ScoreboardAction,
+  action: ScoreboardAction
 ): ScoreboardState {
-  const active = state.activeGame
+  const active = state.activeGame;
 
   switch (action.type) {
     case "hydrate":
-      return action.payload
+      return action.payload;
 
     case "set-game-name":
       return withActiveGame(state, {
         ...active,
         name: action.payload.name,
-      })
+      });
 
     case "regenerate-game-name":
       return withActiveGame(state, {
         ...active,
         name: generateGameName(),
-      })
+      });
 
     case "set-game-started":
       return withActiveGame(state, {
         ...active,
         started: action.payload.started,
-      })
+      });
 
     case "set-enable-teams":
       return withActiveGame(state, {
@@ -127,7 +136,7 @@ export function scoreboardReducer(
           ...active.settings,
           enableTeams: action.payload.enableTeams,
         },
-      })
+      });
 
     case "set-sort-by":
       return withActiveGame(state, {
@@ -136,14 +145,14 @@ export function scoreboardReducer(
           ...active.settings,
           sortBy: action.payload.sortBy,
         },
-      })
+      });
 
     case "set-number-of-rounds": {
-      const numberOfRounds = Math.max(0, action.payload.numberOfRounds)
+      const numberOfRounds = Math.max(0, action.payload.numberOfRounds);
       const currentRound =
         numberOfRounds > 0
           ? Math.min(active.settings.currentRound, numberOfRounds)
-          : active.settings.currentRound
+          : active.settings.currentRound;
 
       return withActiveGame(state, {
         ...active,
@@ -152,7 +161,7 @@ export function scoreboardReducer(
           numberOfRounds,
           currentRound,
         },
-      })
+      });
     }
 
     case "set-show-per-round-scores":
@@ -162,10 +171,10 @@ export function scoreboardReducer(
           ...active.settings,
           showPerRoundScores: action.payload.showPerRoundScores,
         },
-      })
+      });
 
     case "add-player": {
-      const name = action.payload.name.trim()
+      const name = action.payload.name.trim();
 
       const player: Player = {
         id: createEntityId("player"),
@@ -176,12 +185,12 @@ export function scoreboardReducer(
             : action.payload.color,
         scores: Array(active.settings.currentRound).fill(0),
         teamId: active.settings.enableTeams ? action.payload.teamId : null,
-      }
+      };
 
       return withActiveGame(state, {
         ...active,
         players: [...active.players, player],
-      })
+      });
     }
 
     case "set-player-name":
@@ -193,9 +202,9 @@ export function scoreboardReducer(
                 ...player,
                 name: action.payload.name,
               }
-            : player,
+            : player
         ),
-      })
+      });
 
     case "set-player-color":
       return withActiveGame(state, {
@@ -206,49 +215,55 @@ export function scoreboardReducer(
                 ...player,
                 color: action.payload.color,
               }
-            : player,
+            : player
         ),
-      })
+      });
 
     case "remove-player":
       return withActiveGame(state, {
         ...active,
-        players: active.players.filter((player) => player.id !== action.payload.playerId),
-      })
+        players: active.players.filter(
+          (player) => player.id !== action.payload.playerId
+        ),
+      });
 
     case "set-player-team":
       return withActiveGame(state, {
         ...active,
         players: active.players.map((player) => {
           if (player.id !== action.payload.playerId) {
-            return player
+            return player;
           }
-          const teamColor = getTeamColor(active.teams, action.payload.teamId)
+          const teamColor = getTeamColor(active.teams, action.payload.teamId);
           return {
             ...player,
             teamId: action.payload.teamId,
             color: action.payload.teamId ? teamColor : player.color,
-          }
+          };
         }),
-      })
+      });
 
     case "increment-player-score":
       return withActiveGame(state, {
         ...active,
         players: active.players.map((player) => {
           if (player.id !== action.payload.playerId) {
-            return player
+            return player;
           }
-          const hydrated = ensureScoreLength(player, active.settings.currentRound)
-          const scores = [...hydrated.scores]
+          const hydrated = ensureScoreLength(
+            player,
+            active.settings.currentRound
+          );
+          const scores = [...hydrated.scores];
           scores[active.settings.currentRound - 1] =
-            (scores[active.settings.currentRound - 1] ?? 0) + action.payload.delta
+            (scores[active.settings.currentRound - 1] ?? 0) +
+            action.payload.delta;
           return {
             ...hydrated,
             scores,
-          }
+          };
         }),
-      })
+      });
 
     case "set-player-exact-score": {
       if (!active.settings.showPerRoundScores) {
@@ -256,41 +271,46 @@ export function scoreboardReducer(
           active.players,
           active.settings,
           action.payload.playerId,
-          action.payload.score,
-        )
+          action.payload.score
+        );
         return scoreboardReducer(state, {
           type: "increment-player-score",
           payload: {
             playerId: action.payload.playerId,
             delta,
           },
-        })
+        });
       }
 
       return withActiveGame(state, {
         ...active,
         players: active.players.map((player) => {
           if (player.id !== action.payload.playerId) {
-            return player
+            return player;
           }
-          const hydrated = ensureScoreLength(player, active.settings.currentRound)
-          const scores = [...hydrated.scores]
-          scores[active.settings.currentRound - 1] = action.payload.score
+          const hydrated = ensureScoreLength(
+            player,
+            active.settings.currentRound
+          );
+          const scores = [...hydrated.scores];
+          scores[active.settings.currentRound - 1] = action.payload.score;
           return {
             ...hydrated,
             scores,
-          }
+          };
         }),
-      })
+      });
     }
 
     case "add-team": {
-      const teamName = action.payload.name.trim()
+      const teamName = action.payload.name.trim();
       if (
         !teamName ||
-        active.teams.some((team) => team.name.toLowerCase() === teamName.toLowerCase())
+        active.teams.some(
+          (team) => team.name.toLowerCase() === teamName.toLowerCase()
+        )
       ) {
-        return state
+        return state;
       }
       return withActiveGame(state, {
         ...active,
@@ -302,7 +322,7 @@ export function scoreboardReducer(
             color: action.payload.color,
           },
         ],
-      })
+      });
     }
 
     case "remove-team":
@@ -310,27 +330,32 @@ export function scoreboardReducer(
         ...active,
         teams: active.teams.filter((team) => team.id !== action.payload.teamId),
         players: active.players.map((player) =>
-          player.teamId === action.payload.teamId ? { ...player, teamId: null } : player,
+          player.teamId === action.payload.teamId
+            ? { ...player, teamId: null }
+            : player
         ),
-      })
+      });
 
     case "reset-current-round":
       return withActiveGame(state, {
         ...active,
         players: active.players.map((player) => {
-          const hydrated = ensureScoreLength(player, active.settings.currentRound)
-          const scores = [...hydrated.scores]
-          scores[active.settings.currentRound - 1] = 0
+          const hydrated = ensureScoreLength(
+            player,
+            active.settings.currentRound
+          );
+          const scores = [...hydrated.scores];
+          scores[active.settings.currentRound - 1] = 0;
           return {
             ...hydrated,
             scores,
-          }
+          };
         }),
-      })
+      });
 
     case "previous-round": {
       if (active.settings.currentRound <= 1) {
-        return state
+        return state;
       }
       return withActiveGame(state, {
         ...active,
@@ -338,33 +363,35 @@ export function scoreboardReducer(
           ...active.settings,
           currentRound: active.settings.currentRound - 1,
         },
-      })
+      });
     }
 
     case "next-round": {
       const canAdvance =
         active.settings.numberOfRounds === 0 ||
-        active.settings.currentRound < active.settings.numberOfRounds
+        active.settings.currentRound < active.settings.numberOfRounds;
       if (!canAdvance) {
-        return state
+        return state;
       }
 
-      const nextRound = active.settings.currentRound + 1
+      const nextRound = active.settings.currentRound + 1;
       return withActiveGame(state, {
         ...active,
         settings: {
           ...active.settings,
           currentRound: nextRound,
         },
-        players: active.players.map((player) => ensureScoreLength(player, nextRound)),
-      })
+        players: active.players.map((player) =>
+          ensureScoreLength(player, nextRound)
+        ),
+      });
     }
 
     case "start-new-game": {
       const currentHistory =
         active.players.length > 0
           ? upsertHistory(state.history, snapshotFromActiveGame(active))
-          : state.history
+          : state.history;
 
       return {
         ...state,
@@ -380,19 +407,19 @@ export function scoreboardReducer(
           ...state.ui,
           selectedHistoryGameId: null,
         },
-      }
+      };
     }
 
     case "reset-entire-game":
       return {
         ...state,
         activeGame: createInitialActiveGame(),
-      }
+      };
 
     case "load-history-game": {
-      const historyGame = getHistoryGameById(state, action.payload.gameId)
+      const historyGame = getHistoryGameById(state, action.payload.gameId);
       if (!historyGame) {
-        return state
+        return state;
       }
 
       return {
@@ -405,13 +432,15 @@ export function scoreboardReducer(
           },
           started: false,
         },
-      }
+      };
     }
 
     case "delete-history-game":
       return {
         ...state,
-        history: state.history.filter((game) => game.id !== action.payload.gameId),
+        history: state.history.filter(
+          (game) => game.id !== action.payload.gameId
+        ),
         ui: {
           ...state.ui,
           selectedHistoryGameId:
@@ -419,7 +448,7 @@ export function scoreboardReducer(
               ? null
               : state.ui.selectedHistoryGameId,
         },
-      }
+      };
 
     case "clear-history":
       return {
@@ -429,7 +458,7 @@ export function scoreboardReducer(
           ...state.ui,
           selectedHistoryGameId: null,
         },
-      }
+      };
 
     case "set-selected-history-game":
       return {
@@ -438,10 +467,10 @@ export function scoreboardReducer(
           ...state.ui,
           selectedHistoryGameId: action.payload.gameId,
         },
-      }
+      };
 
     default:
-      return state
+      return state;
   }
 }
 
@@ -449,9 +478,9 @@ export function getSortedPlayersForGame(game: GameSnapshot): Player[] {
   return getSortedPlayers(game.players, {
     ...game.settings,
     showPerRoundScores: false,
-  })
+  });
 }
 
 export function getPlayersByTeamForGame(game: GameSnapshot) {
-  return getPlayersByTeam(getSortedPlayersForGame(game))
+  return getPlayersByTeam(getSortedPlayersForGame(game));
 }

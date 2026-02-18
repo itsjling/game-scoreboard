@@ -1,27 +1,37 @@
-import { ScrollView, View } from "react-native"
+import { ScrollView, View } from "react-native";
 
-import { BrutalCard, BrutalHeading, BrutalText, ColorDot } from "@/theme/neo-brutal/primitives"
-import { useNeoBrutalTheme } from "@/theme/neo-brutal/theme"
+import {
+  BrutalCard,
+  BrutalHeading,
+  BrutalText,
+  ColorDot,
+} from "@/theme/neo-brutal/primitives";
+import { useNeoBrutalTheme } from "@/theme/neo-brutal/theme";
 
-import { getPlayerTotalScore } from "../selectors"
-import type { Player, Team } from "../types"
+import { getPlayerTotalScore } from "../selectors";
+import type { Player, Team } from "../types";
 
 interface ScoreTableProps {
-  title: string
-  players: Player[]
-  teams: Team[]
-  currentRound: number
+  currentRound: number;
+  players: Player[];
+  teams: Team[];
+  title: string;
 }
 
-export function ScoreTable({ title, players, teams, currentRound }: ScoreTableProps) {
-  const { tokens } = useNeoBrutalTheme()
+export function ScoreTable({
+  title,
+  players,
+  teams,
+  currentRound,
+}: ScoreTableProps) {
+  const { tokens } = useNeoBrutalTheme();
 
   return (
     <BrutalCard>
       <BrutalHeading style={{ fontSize: 16, marginBottom: tokens.spacing.sm }}>
         {title}
       </BrutalHeading>
-      <ScrollView horizontal contentContainerStyle={{ minWidth: "100%" }}>
+      <ScrollView contentContainerStyle={{ minWidth: "100%" }} horizontal>
         <View style={{ minWidth: 640 }}>
           <View
             style={{
@@ -30,21 +40,21 @@ export function ScoreTable({ title, players, teams, currentRound }: ScoreTablePr
               borderBottomColor: tokens.color.border,
             }}
           >
-            <Cell label="PLAYER" width={180} isHeader />
-            {Array.from({ length: Math.max(currentRound, 1) }, (_, index) => (
+            <Cell isHeader label="PLAYER" width={180} />
+            {Array.from({ length: Math.max(currentRound, 1) }, (_, r) => (
               <Cell
-                key={`round-header-${index}`}
-                label={`R${index + 1}`}
-                width={56}
-                isHeader
                 centered
+                isHeader
+                key={`round-${r + 1}`}
+                label={`R${r + 1}`}
+                width={56}
               />
             ))}
-            <Cell label="TOTAL" width={72} isHeader centered />
+            <Cell centered isHeader label="TOTAL" width={72} />
           </View>
 
           {players.map((player) => {
-            const team = teams.find((entry) => entry.id === player.teamId)
+            const team = teams.find((entry) => entry.id === player.teamId);
             return (
               <View
                 key={player.id}
@@ -69,22 +79,30 @@ export function ScoreTable({ title, players, teams, currentRound }: ScoreTablePr
                     {player.name}
                   </BrutalText>
                 </View>
-                {Array.from({ length: Math.max(currentRound, 1) }, (_, roundIndex) => (
-                  <Cell
-                    key={`${player.id}-round-${roundIndex}`}
-                    label={String(player.scores[roundIndex] ?? 0)}
-                    width={56}
-                    centered
-                  />
-                ))}
-                <Cell label={String(getPlayerTotalScore(player))} width={72} centered bold />
+                {Array.from(
+                  { length: Math.max(currentRound, 1) },
+                  (_, roundIndex) => (
+                    <Cell
+                      centered
+                      key={`${player.id}-round-${roundIndex}`}
+                      label={String(player.scores[roundIndex] ?? 0)}
+                      width={56}
+                    />
+                  )
+                )}
+                <Cell
+                  bold
+                  centered
+                  label={String(getPlayerTotalScore(player))}
+                  width={72}
+                />
               </View>
-            )
+            );
           })}
         </View>
       </ScrollView>
     </BrutalCard>
-  )
+  );
 }
 
 function Cell({
@@ -94,13 +112,13 @@ function Cell({
   isHeader = false,
   bold = false,
 }: {
-  label: string
-  width: number
-  centered?: boolean
-  isHeader?: boolean
-  bold?: boolean
+  label: string;
+  width: number;
+  centered?: boolean;
+  isHeader?: boolean;
+  bold?: boolean;
 }) {
-  const { tokens } = useNeoBrutalTheme()
+  const { tokens } = useNeoBrutalTheme();
 
   return (
     <View
@@ -115,7 +133,10 @@ function Cell({
       <BrutalText
         selectable
         style={{
-          fontFamily: isHeader || bold ? tokens.typography.heading : tokens.typography.mono,
+          fontFamily:
+            isHeader || bold
+              ? tokens.typography.heading
+              : tokens.typography.mono,
           fontSize: isHeader ? 12 : 13,
           textTransform: isHeader ? "uppercase" : "none",
           fontVariant: ["tabular-nums"],
@@ -124,5 +145,5 @@ function Cell({
         {label}
       </BrutalText>
     </View>
-  )
+  );
 }

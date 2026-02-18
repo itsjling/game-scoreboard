@@ -1,20 +1,20 @@
-import { useState } from "react"
-import { Pressable, View, useWindowDimensions } from "react-native"
+import { useState } from "react";
+import { Pressable, useWindowDimensions, View } from "react-native";
 
-import { BrutalText } from "@/theme/neo-brutal/primitives"
-import { useNeoBrutalTheme } from "@/theme/neo-brutal/theme"
+import { BrutalText } from "@/theme/neo-brutal/primitives";
+import { useNeoBrutalTheme } from "@/theme/neo-brutal/theme";
 
-import type { Player } from "../types"
-import { ScoreEditModal } from "./score-edit-modal"
+import type { Player } from "../types";
+import { ScoreEditModal } from "./score-edit-modal";
 
 interface PlayerCardProps {
-  player: Player
-  displayScore: number
-  gameStarted: boolean
-  onIncrement: (playerId: string, delta: number) => void
-  onSetExactScore: (playerId: string, score: number) => void
-  _onRemove: (playerId: string) => void
-  _onStartEditing?: (playerId: string) => void
+  _onRemove: (playerId: string) => void;
+  _onStartEditing?: (playerId: string) => void;
+  displayScore: number;
+  gameStarted: boolean;
+  onIncrement: (playerId: string, delta: number) => void;
+  onSetExactScore: (playerId: string, score: number) => void;
+  player: Player;
 }
 
 export function PlayerCard({
@@ -26,23 +26,23 @@ export function PlayerCard({
   _onRemove,
   _onStartEditing,
 }: PlayerCardProps) {
-  const { tokens } = useNeoBrutalTheme()
-  const { width } = useWindowDimensions()
-  const isCompact = width < 430
+  const { tokens } = useNeoBrutalTheme();
+  const { width } = useWindowDimensions();
+  const isCompact = width < 430;
 
-  const [showEditModal, setShowEditModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const handleOpenEdit = () => {
     if (gameStarted) {
-      setShowEditModal(true)
-      _onStartEditing?.(player.id)
+      setShowEditModal(true);
+      _onStartEditing?.(player.id);
     }
-  }
+  };
 
   const handleApplyScore = (newScore: number) => {
-    onSetExactScore(player.id, newScore)
-    setShowEditModal(false)
-  }
+    onSetExactScore(player.id, newScore);
+    setShowEditModal(false);
+  };
 
   return (
     <>
@@ -140,10 +140,10 @@ export function PlayerCard({
           >
             {/* Minus Button */}
             <Pressable
-              accessibilityRole="button"
               accessibilityLabel={`Decrease ${player.name} score`}
-              onPress={() => onIncrement(player.id, -1)}
+              accessibilityRole="button"
               disabled={!gameStarted}
+              onPress={() => onIncrement(player.id, -1)}
               style={{
                 flex: 1,
                 paddingVertical: 16,
@@ -167,10 +167,10 @@ export function PlayerCard({
 
             {/* Score Display */}
             <Pressable
-              accessibilityRole="button"
               accessibilityLabel={`Edit ${player.name} score`}
-              onPress={handleOpenEdit}
+              accessibilityRole="button"
               disabled={!gameStarted}
+              onPress={handleOpenEdit}
               style={{
                 flex: 2,
                 paddingVertical: 16,
@@ -195,10 +195,10 @@ export function PlayerCard({
 
             {/* Plus Button */}
             <Pressable
-              accessibilityRole="button"
               accessibilityLabel={`Increase ${player.name} score`}
-              onPress={() => onIncrement(player.id, 1)}
+              accessibilityRole="button"
               disabled={!gameStarted}
+              onPress={() => onIncrement(player.id, 1)}
               style={{
                 flex: 1,
                 paddingVertical: 16,
@@ -223,12 +223,12 @@ export function PlayerCard({
 
       {/* Score Edit Modal */}
       <ScoreEditModal
-        visible={showEditModal}
-        player={player}
         currentScore={displayScore}
-        onClose={() => setShowEditModal(false)}
         onApply={handleApplyScore}
+        onClose={() => setShowEditModal(false)}
+        player={player}
+        visible={showEditModal}
       />
     </>
-  )
+  );
 }

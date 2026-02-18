@@ -1,30 +1,30 @@
-import { ReactNode, useEffect, useState } from "react"
-import { Modal, Pressable, ScrollView, View } from "react-native"
 import {
   BarChart3,
   Infinity as InfinityIcon,
   List,
+  type LucideIcon,
   Minus,
   Plus,
   RotateCcw,
   X,
-  type LucideIcon,
-} from "lucide-react-native"
+} from "lucide-react-native";
+import { type ReactNode, useEffect, useState } from "react";
+import { Modal, Pressable, ScrollView, View } from "react-native";
 
-import { DEFAULT_SETTINGS } from "@/features/scoreboard/constants"
-import { BrutalText } from "@/theme/neo-brutal/primitives"
-import { useNeoBrutalTheme } from "@/theme/neo-brutal/theme"
+import { DEFAULT_SETTINGS } from "@/features/scoreboard/constants";
+import { BrutalText } from "@/theme/neo-brutal/primitives";
+import { useNeoBrutalTheme } from "@/theme/neo-brutal/theme";
 
-import type { AppSettings, SortBy } from "../types"
+import type { AppSettings, SortBy } from "../types";
 
 interface SettingsModalProps {
-  visible: boolean
-  settings: AppSettings
-  onClose: () => void
-  onToggleTeams: (enableTeams: boolean) => void
-  onToggleAccumulated: (showPerRound: boolean) => void
-  onChangeSortBy: (value: SortBy) => void
-  onChangeNumberOfRounds: (value: number) => void
+  onChangeNumberOfRounds: (value: number) => void;
+  onChangeSortBy: (value: SortBy) => void;
+  onClose: () => void;
+  onToggleAccumulated: (showPerRound: boolean) => void;
+  onToggleTeams: (enableTeams: boolean) => void;
+  settings: AppSettings;
+  visible: boolean;
 }
 
 export function SettingsModal({
@@ -36,39 +36,45 @@ export function SettingsModal({
   onChangeNumberOfRounds,
   onChangeSortBy,
 }: SettingsModalProps) {
-  const { tokens } = useNeoBrutalTheme()
-  const [draftEnableTeams, setDraftEnableTeams] = useState(settings.enableTeams)
-  const [draftShowPerRound, setDraftShowPerRound] = useState(settings.showPerRoundScores)
-  const [draftNumberOfRounds, setDraftNumberOfRounds] = useState(settings.numberOfRounds)
-  const [draftSortBy, setDraftSortBy] = useState<SortBy>(settings.sortBy)
+  const { tokens } = useNeoBrutalTheme();
+  const [draftEnableTeams, setDraftEnableTeams] = useState(
+    settings.enableTeams
+  );
+  const [draftShowPerRound, setDraftShowPerRound] = useState(
+    settings.showPerRoundScores
+  );
+  const [draftNumberOfRounds, setDraftNumberOfRounds] = useState(
+    settings.numberOfRounds
+  );
+  const [draftSortBy, setDraftSortBy] = useState<SortBy>(settings.sortBy);
 
   useEffect(() => {
     if (!visible) {
-      return
+      return;
     }
-    setDraftEnableTeams(settings.enableTeams)
-    setDraftShowPerRound(settings.showPerRoundScores)
-    setDraftNumberOfRounds(settings.numberOfRounds)
-    setDraftSortBy(settings.sortBy)
-  }, [settings, visible])
+    setDraftEnableTeams(settings.enableTeams);
+    setDraftShowPerRound(settings.showPerRoundScores);
+    setDraftNumberOfRounds(settings.numberOfRounds);
+    setDraftSortBy(settings.sortBy);
+  }, [settings, visible]);
 
   const applyChanges = () => {
-    onToggleTeams(draftEnableTeams)
-    onToggleAccumulated(draftShowPerRound)
-    onChangeNumberOfRounds(draftNumberOfRounds)
-    onChangeSortBy(draftSortBy)
-    onClose()
-  }
+    onToggleTeams(draftEnableTeams);
+    onToggleAccumulated(draftShowPerRound);
+    onChangeNumberOfRounds(draftNumberOfRounds);
+    onChangeSortBy(draftSortBy);
+    onClose();
+  };
 
   const resetDraft = () => {
-    setDraftEnableTeams(DEFAULT_SETTINGS.enableTeams)
-    setDraftShowPerRound(DEFAULT_SETTINGS.showPerRoundScores)
-    setDraftNumberOfRounds(DEFAULT_SETTINGS.numberOfRounds)
-    setDraftSortBy(DEFAULT_SETTINGS.sortBy)
-  }
+    setDraftEnableTeams(DEFAULT_SETTINGS.enableTeams);
+    setDraftShowPerRound(DEFAULT_SETTINGS.showPerRoundScores);
+    setDraftNumberOfRounds(DEFAULT_SETTINGS.numberOfRounds);
+    setDraftSortBy(DEFAULT_SETTINGS.sortBy);
+  };
 
   return (
-    <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
+    <Modal animationType="slide" onRequestClose={onClose} visible={visible}>
       <View
         style={{
           flex: 1,
@@ -146,11 +152,11 @@ export function SettingsModal({
                   <BrutalText style={styles.title(tokens.typography.heading)}>
                     Enable Teams
                   </BrutalText>
-                  <Tag text="Group Play" color="#D9CFEA" />
+                  <Tag color="#D9CFEA" text="Group Play" />
                 </View>
                 <ToggleSquare
-                  value={draftEnableTeams}
                   onPress={() => setDraftEnableTeams((prev) => !prev)}
+                  value={draftEnableTeams}
                 />
               </View>
             </View>
@@ -159,23 +165,43 @@ export function SettingsModal({
           <ShadowCard>
             <View style={{ gap: 18 }}>
               <View style={{ gap: 8 }}>
-                <BrutalText style={styles.title(tokens.typography.heading)}>Round Cap</BrutalText>
-                <Tag text="Max Rounds" color="#D7E0EE" />
+                <BrutalText style={styles.title(tokens.typography.heading)}>
+                  Round Cap
+                </BrutalText>
+                <Tag color="#D7E0EE" text="Max Rounds" />
               </View>
-              <View style={{ flexDirection: "row", justifyContent: "flex-end" }}>
-                <View style={{ flexDirection: "row", borderWidth: 4, borderColor: "#000000" }}>
+              <View
+                style={{ flexDirection: "row", justifyContent: "flex-end" }}
+              >
+                <View
+                  style={{
+                    flexDirection: "row",
+                    borderWidth: 4,
+                    borderColor: "#000000",
+                  }}
+                >
                   <Pressable
                     accessibilityRole="button"
-                    onPress={() => setDraftNumberOfRounds((prev) => Math.max(0, prev - 1))}
+                    onPress={() =>
+                      setDraftNumberOfRounds((prev) => Math.max(0, prev - 1))
+                    }
                     style={[styles.stepButton, { backgroundColor: "#F6F6F6" }]}
                   >
-                    <Minus size={28} color="#000000" strokeWidth={2.8} />
+                    <Minus color="#000000" size={28} strokeWidth={2.8} />
                   </Pressable>
-                  <View style={[styles.stepValue, { backgroundColor: "#FEE500" }]}>
+                  <View
+                    style={[styles.stepValue, { backgroundColor: "#FEE500" }]}
+                  >
                     {draftNumberOfRounds === 0 ? (
-                      <InfinityIcon size={32} color="#000000" strokeWidth={2.8} />
+                      <InfinityIcon
+                        color="#000000"
+                        size={32}
+                        strokeWidth={2.8}
+                      />
                     ) : (
-                      <BrutalText style={styles.stepValueText(tokens.typography.heading)}>
+                      <BrutalText
+                        style={styles.stepValueText(tokens.typography.heading)}
+                      >
                         {draftNumberOfRounds}
                       </BrutalText>
                     )}
@@ -185,7 +211,7 @@ export function SettingsModal({
                     onPress={() => setDraftNumberOfRounds((prev) => prev + 1)}
                     style={[styles.stepButton, { backgroundColor: "#F6F6F6" }]}
                   >
-                    <Plus size={28} color="#000000" strokeWidth={2.8} />
+                    <Plus color="#000000" size={28} strokeWidth={2.8} />
                   </Pressable>
                 </View>
               </View>
@@ -194,19 +220,19 @@ export function SettingsModal({
 
           <TiltLabel label="Display Mode" />
           <SelectableModeCard
-            title="Per-round"
             body="Individual scores for current round."
             icon={List}
-            selected={draftShowPerRound}
             onPress={() => setDraftShowPerRound(true)}
+            selected={draftShowPerRound}
+            title="Per-round"
           />
           <View style={{ marginBottom: 22 }}>
             <SelectableModeCard
-              title="Total Score"
               body="Accumulated sum of all rounds."
               icon={BarChart3}
-              selected={!draftShowPerRound}
               onPress={() => setDraftShowPerRound(false)}
+              selected={!draftShowPerRound}
+              title="Total Score"
             />
           </View>
         </ScrollView>
@@ -225,26 +251,26 @@ export function SettingsModal({
           }}
         >
           <ShadowButton
-            label="Reset"
-            icon={RotateCcw}
             color="#F8F8F8"
-            textColor="#000000"
+            icon={RotateCcw}
+            label="Reset"
             onPress={resetDraft}
+            textColor="#000000"
           />
           <ShadowButton
-            label="Save Changes"
             color="#9850F6"
-            textColor="#F4F4FF"
+            label="Save Changes"
             onPress={applyChanges}
+            textColor="#F4F4FF"
           />
         </View>
       </View>
     </Modal>
-  )
+  );
 }
 
 function TiltLabel({ label }: { label: string }) {
-  const { tokens } = useNeoBrutalTheme()
+  const { tokens } = useNeoBrutalTheme();
 
   return (
     <View
@@ -267,7 +293,7 @@ function TiltLabel({ label }: { label: string }) {
         {label}
       </BrutalText>
     </View>
-  )
+  );
 }
 
 function ShadowCard({ children }: { children: ReactNode }) {
@@ -295,11 +321,11 @@ function ShadowCard({ children }: { children: ReactNode }) {
         {children}
       </View>
     </View>
-  )
+  );
 }
 
 function Tag({ text, color }: { text: string; color: string }) {
-  const { tokens } = useNeoBrutalTheme()
+  const { tokens } = useNeoBrutalTheme();
 
   return (
     <View
@@ -323,10 +349,16 @@ function Tag({ text, color }: { text: string; color: string }) {
         {text}
       </BrutalText>
     </View>
-  )
+  );
 }
 
-function ToggleSquare({ value, onPress }: { value: boolean; onPress: () => void }) {
+function ToggleSquare({
+  value,
+  onPress,
+}: {
+  value: boolean;
+  onPress: () => void;
+}) {
   return (
     <Pressable
       accessibilityRole="switch"
@@ -351,7 +383,7 @@ function ToggleSquare({ value, onPress }: { value: boolean; onPress: () => void 
         }}
       />
     </Pressable>
-  )
+  );
 }
 
 function SelectableModeCard({
@@ -361,23 +393,38 @@ function SelectableModeCard({
   selected,
   onPress,
 }: {
-  title: string
-  body: string
-  icon: LucideIcon
-  selected: boolean
-  onPress: () => void
+  title: string;
+  body: string;
+  icon: LucideIcon;
+  selected: boolean;
+  onPress: () => void;
 }) {
-  const { tokens } = useNeoBrutalTheme()
-  const Icon = icon
+  const { tokens } = useNeoBrutalTheme();
+  const Icon = icon;
 
   return (
-    <Pressable accessibilityRole="radio" accessibilityState={{ selected }} onPress={onPress}>
+    <Pressable
+      accessibilityRole="radio"
+      accessibilityState={{ selected }}
+      onPress={onPress}
+    >
       <ShadowCard>
         <View style={{ gap: 8 }}>
           <View
-            style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
           >
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 14, flex: 1 }}>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 14,
+                flex: 1,
+              }}
+            >
               <View
                 style={{
                   width: 40,
@@ -387,9 +434,11 @@ function SelectableModeCard({
                   backgroundColor: selected ? "#000000" : "#FFFFFF",
                 }}
               />
-              <BrutalText style={styles.title(tokens.typography.heading)}>{title}</BrutalText>
+              <BrutalText style={styles.title(tokens.typography.heading)}>
+                {title}
+              </BrutalText>
             </View>
-            <Icon size={28} color="#000000" strokeWidth={2.4} />
+            <Icon color="#000000" size={28} strokeWidth={2.4} />
           </View>
           <BrutalText
             style={{
@@ -404,7 +453,7 @@ function SelectableModeCard({
         </View>
       </ShadowCard>
     </Pressable>
-  )
+  );
 }
 
 function ShadowButton({
@@ -414,14 +463,14 @@ function ShadowButton({
   textColor,
   icon,
 }: {
-  label: string
-  color: string
-  onPress: () => void
-  textColor: string
-  icon?: LucideIcon
+  label: string;
+  color: string;
+  onPress: () => void;
+  textColor: string;
+  icon?: LucideIcon;
 }) {
-  const { tokens } = useNeoBrutalTheme()
-  const Icon = icon
+  const { tokens } = useNeoBrutalTheme();
+  const Icon = icon;
 
   return (
     <View style={{ marginRight: 6, marginBottom: 6 }}>
@@ -449,7 +498,7 @@ function ShadowButton({
           gap: 12,
         }}
       >
-        {Icon ? <Icon size={20} color={textColor} strokeWidth={2.6} /> : null}
+        {Icon ? <Icon color={textColor} size={20} strokeWidth={2.6} /> : null}
         <BrutalText
           style={{
             fontFamily: tokens.typography.heading,
@@ -462,11 +511,17 @@ function ShadowButton({
         </BrutalText>
       </Pressable>
     </View>
-  )
+  );
 }
 
-function IconTile({ icon, onPress }: { icon: LucideIcon; onPress: () => void }) {
-  const Icon = icon
+function IconTile({
+  icon,
+  onPress,
+}: {
+  icon: LucideIcon;
+  onPress: () => void;
+}) {
+  const Icon = icon;
 
   return (
     <View style={{ marginRight: 4, marginBottom: 4 }}>
@@ -481,8 +536,8 @@ function IconTile({ icon, onPress }: { icon: LucideIcon; onPress: () => void }) 
         }}
       />
       <Pressable
-        onPress={onPress}
         accessibilityRole="button"
+        onPress={onPress}
         style={{
           width: 72,
           height: 72,
@@ -493,10 +548,10 @@ function IconTile({ icon, onPress }: { icon: LucideIcon; onPress: () => void }) 
           justifyContent: "center",
         }}
       >
-        <Icon size={32} color="#000000" strokeWidth={2.8} />
+        <Icon color="#000000" size={32} strokeWidth={2.8} />
       </Pressable>
     </View>
-  )
+  );
 }
 
 const styles = {
@@ -531,4 +586,4 @@ const styles = {
       color: "#000000",
       textTransform: "uppercase",
     }) as const,
-}
+};

@@ -1,54 +1,55 @@
-import { loadString, saveString } from "@/utils/storage"
+import { loadString, saveString } from "@/utils/storage";
 
-import type { AnalyticsEventName } from "./events"
+import type { AnalyticsEventName } from "./events";
 
-const DISTINCT_ID_KEY = "analytics.distinct-id"
+const DISTINCT_ID_KEY = "analytics.distinct-id";
+const TRAILING_SLASH_REGEX = /\/$/;
 
 interface CapturePayload {
-  [key: string]: unknown
+  [key: string]: unknown;
 }
 
 class PosthogClient {
-  private apiKey: string | undefined
-  private host: string | undefined
-  private distinctId = ""
-  private initialized = false
+  private apiKey: string | undefined;
+  private host: string | undefined;
+  private distinctId = "";
+  private initialized = false;
 
   init() {
     if (this.initialized) {
-      return
+      return;
     }
 
-    this.apiKey = process.env.EXPO_PUBLIC_POSTHOG_KEY
-    this.host = process.env.EXPO_PUBLIC_POSTHOG_HOST
+    this.apiKey = process.env.EXPO_PUBLIC_POSTHOG_KEY;
+    this.host = process.env.EXPO_PUBLIC_POSTHOG_HOST;
 
-    if (!this.apiKey || !this.host) {
-      this.initialized = true
-      return
+    if (!(this.apiKey && this.host)) {
+      this.initialized = true;
+      return;
     }
 
-    const savedDistinctId = loadString(DISTINCT_ID_KEY)
+    const savedDistinctId = loadString(DISTINCT_ID_KEY);
     if (savedDistinctId) {
-      this.distinctId = savedDistinctId
+      this.distinctId = savedDistinctId;
     } else {
-      this.distinctId = `device_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`
-      saveString(DISTINCT_ID_KEY, this.distinctId)
+      this.distinctId = `device_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+      saveString(DISTINCT_ID_KEY, this.distinctId);
     }
 
-    this.initialized = true
+    this.initialized = true;
   }
 
   async capture(event: AnalyticsEventName, properties: CapturePayload = {}) {
     if (!this.initialized) {
-      this.init()
+      this.init();
     }
 
-    if (!this.apiKey || !this.host) {
-      return
+    if (!(this.apiKey && this.host)) {
+      return;
     }
 
     try {
-      await fetch(`${this.host.replace(/\/$/, "")}/capture/`, {
+      await fetch(`${this.host.replace(TRAILING_SLASH_REGEX, "")}/capture/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -63,11 +64,11 @@ class PosthogClient {
           },
           timestamp: new Date().toISOString(),
         }),
-      })
+      });
     } catch {
       // Intentionally swallow analytics failures to keep game interactions resilient.
     }
   }
 }
 
-export const analytics = new PosthogClient()
+export const analytics = new PosthogClient();

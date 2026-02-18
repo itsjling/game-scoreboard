@@ -1,4 +1,4 @@
-import { Translations } from "./en"
+import type { Translations } from "./en";
 
 const hi: Translations = {
   common: {
@@ -21,10 +21,11 @@ const hi: Translations = {
   emptyStateComponent: {
     generic: {
       heading: "इतना खाली... इतना उदास",
-      content: "अभी तक कोई डेटा नहीं मिला। रीफ्रेश करने या ऐप को पुनः लोड करने के लिए बटन दबाएं।",
+      content:
+        "अभी तक कोई डेटा नहीं मिला। रीफ्रेश करने या ऐप को पुनः लोड करने के लिए बटन दबाएं।",
       button: "चलो फिर से कोशिश करते हैं",
     },
   },
-}
+};
 
-export default hi
+export default hi;
