@@ -255,9 +255,18 @@ const $textPresets: Record<Presets, ThemedStyleArray<TextStyle>> = {
 };
 
 const $pressedViewPresets: Record<Presets, ThemedStyle<ViewStyle>> = {
-  default: ({ colors }) => ({ backgroundColor: colors.palette.neutral200 }),
-  filled: ({ colors }) => ({ backgroundColor: colors.palette.neutral400 }),
-  reversed: ({ colors }) => ({ backgroundColor: colors.palette.neutral700 }),
+  default: ({ colors }) => ({
+    backgroundColor: colors.palette.neutral200,
+    transform: [{ scale: 0.97 }, { translateY: 2 }],
+  }),
+  filled: ({ colors }) => ({
+    backgroundColor: colors.palette.neutral400,
+    transform: [{ scale: 0.97 }, { translateY: 2 }],
+  }),
+  reversed: ({ colors }) => ({
+    backgroundColor: colors.palette.neutral700,
+    transform: [{ scale: 0.97 }, { translateY: 2 }],
+  }),
 };
 
 const $pressedTextPresets: Record<Presets, ThemedStyle<TextStyle>> = {
