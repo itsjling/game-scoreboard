@@ -1,12 +1,6 @@
+import { ArrowLeft, Trash2 } from "lucide-react-native";
 import { useState } from "react";
-import { Modal, Pressable, ScrollView, View } from "react-native";
-
-import {
-  BrutalButton,
-  BrutalCard,
-  BrutalText,
-} from "@/theme/neo-brutal/primitives";
-import { useNeoBrutalTheme } from "@/theme/neo-brutal/theme";
+import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { getSortedPlayersForGame } from "../reducer";
 import type { GameSnapshot } from "../types";
@@ -24,6 +18,17 @@ interface HistoryModalProps {
   visible: boolean;
 }
 
+const setupColors = {
+  background: "#E7E7E8",
+  surface: "#F4F4F5",
+  border: "#000000",
+  sectionText: "#61646C",
+  yellow: "#FDE100",
+  green: "#8EEB2E",
+  red: "#FF4444",
+  blue: "#59C7E8",
+};
+
 export function HistoryModal({
   visible,
   currentGame,
@@ -35,173 +40,381 @@ export function HistoryModal({
   onDeleteGame,
   onClearHistory,
 }: HistoryModalProps) {
-  const { tokens } = useNeoBrutalTheme();
   const [activeTab, setActiveTab] = useState<"rounds" | "games">("rounds");
 
+  if (!visible) {
+    return null;
+  }
+
   return (
-    <Modal
-      animationType="slide"
-      onRequestClose={onClose}
-      transparent
-      visible={visible}
+    <View
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: setupColors.background,
+        zIndex: 100,
+      }}
     >
       <View
         style={{
-          flex: 1,
-          backgroundColor: "rgba(0,0,0,0.5)",
-          justifyContent: "center",
-          padding: 12,
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          borderBottomWidth: 5,
+          borderBottomColor: setupColors.border,
+          backgroundColor: setupColors.surface,
         }}
       >
-        <BrutalCard
+        <View
           style={{
-            maxHeight: "92%",
-            gap: 10,
-            backgroundColor: tokens.color.background,
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
           }}
         >
-          <View
+          <ShadowFrame>
+            <Pressable
+              accessibilityLabel="Close history"
+              accessibilityRole="button"
+              onPress={onClose}
+              style={{
+                borderWidth: 4,
+                borderColor: setupColors.border,
+                backgroundColor: setupColors.yellow,
+                paddingHorizontal: 14,
+                paddingVertical: 10,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 8,
+              }}
+            >
+              <ArrowLeft
+                color={setupColors.border}
+                size={20}
+                strokeWidth={2.5}
+              />
+              <Text
+                style={{
+                  fontFamily: "geistBold",
+                  fontSize: 16,
+                  textTransform: "uppercase",
+                  color: setupColors.border,
+                }}
+              >
+                Back
+              </Text>
+            </Pressable>
+          </ShadowFrame>
+
+          <Text
             style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
+              fontFamily: "geistBold",
+              fontSize: 24,
+              textTransform: "uppercase",
+              color: setupColors.border,
+              fontStyle: "italic",
+            }}
+          >
+            History
+          </Text>
+        </View>
+      </View>
+
+      <View
+        style={{
+          flexDirection: "row",
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          gap: 10,
+        }}
+      >
+        <ShadowFrame>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => setActiveTab("rounds")}
+            style={{
+              borderWidth: 4,
+              borderColor: setupColors.border,
+              backgroundColor:
+                activeTab === "rounds"
+                  ? setupColors.yellow
+                  : setupColors.surface,
+              paddingHorizontal: 16,
+              paddingVertical: 10,
+              minWidth: 120,
               alignItems: "center",
             }}
           >
-            <BrutalText
+            <Text
               style={{
-                fontFamily: tokens.typography.heading,
+                fontFamily: "geistBold",
+                fontSize: 14,
                 textTransform: "uppercase",
-                fontSize: 18,
+                color: setupColors.border,
               }}
             >
-              Score History
-            </BrutalText>
-            <BrutalButton
-              color={tokens.color.surfaceAlt}
-              label="Close"
-              onPress={onClose}
-            />
-          </View>
+              Current
+            </Text>
+          </Pressable>
+        </ShadowFrame>
 
-          <View style={{ flexDirection: "row", gap: 8 }}>
-            <BrutalButton
-              color={
-                activeTab === "rounds"
-                  ? tokens.color.yellow
-                  : tokens.color.surfaceAlt
-              }
-              label="Current"
-              onPress={() => setActiveTab("rounds")}
-            />
-            <BrutalButton
-              color={
-                activeTab === "games"
-                  ? tokens.color.yellow
-                  : tokens.color.surfaceAlt
-              }
-              label="Previous"
-              onPress={() => setActiveTab("games")}
-            />
-          </View>
+        <ShadowFrame>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => setActiveTab("games")}
+            style={{
+              borderWidth: 4,
+              borderColor: setupColors.border,
+              backgroundColor:
+                activeTab === "games" ? setupColors.green : setupColors.surface,
+              paddingHorizontal: 16,
+              paddingVertical: 10,
+              minWidth: 120,
+              alignItems: "center",
+            }}
+          >
+            <Text
+              style={{
+                fontFamily: "geistBold",
+                fontSize: 14,
+                textTransform: "uppercase",
+                color: setupColors.border,
+              }}
+            >
+              Previous
+            </Text>
+          </Pressable>
+        </ShadowFrame>
+      </View>
 
-          <ScrollView contentContainerStyle={{ gap: 10, paddingBottom: 8 }}>
-            {activeTab === "rounds" ? (
-              <ScoreTable
-                currentRound={currentGame.settings.currentRound}
-                players={getSortedPlayersForGame(currentGame)}
-                teams={currentGame.teams}
-                title="Current Game"
-              />
-            ) : (
-              <View style={{ gap: 10 }}>
-                {history.length > 0 ? (
-                  <>
-                    <BrutalButton
-                      color={tokens.color.red}
-                      label="Clear All"
-                      onPress={onClearHistory}
-                    />
+      <ScrollView
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          gap: 12,
+          paddingBottom: 40,
+        }}
+      >
+        {activeTab === "rounds" ? (
+          <ScoreTable
+            currentRound={currentGame.settings.currentRound}
+            players={getSortedPlayersForGame(currentGame)}
+            teams={currentGame.teams}
+            title="Current Game"
+          />
+        ) : (
+          <View style={{ gap: 12 }}>
+            {history.length > 0 ? (
+              <>
+                <ShadowFrame>
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={onClearHistory}
+                    style={{
+                      borderWidth: 4,
+                      borderColor: setupColors.border,
+                      backgroundColor: setupColors.red,
+                      paddingHorizontal: 16,
+                      paddingVertical: 12,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 8,
+                    }}
+                  >
+                    <Trash2 color="#FFFFFF" size={18} strokeWidth={2.5} />
+                    <Text
+                      style={{
+                        fontFamily: "geistBold",
+                        fontSize: 16,
+                        textTransform: "uppercase",
+                        color: "#FFFFFF",
+                      }}
+                    >
+                      Clear All History
+                    </Text>
+                  </Pressable>
+                </ShadowFrame>
 
-                    {history.map((game) => {
-                      const expanded = selectedGameId === game.id;
+                {history.map((game) => {
+                  const expanded = selectedGameId === game.id;
 
-                      return (
-                        <View key={game.id} style={{ gap: 8 }}>
-                          <BrutalCard>
-                            <View
+                  return (
+                    <View key={game.id} style={{ gap: 10 }}>
+                      <ShadowFrame>
+                        <View
+                          style={{
+                            borderWidth: 4,
+                            borderColor: setupColors.border,
+                            backgroundColor: setupColors.surface,
+                            padding: 12,
+                          }}
+                        >
+                          <Pressable
+                            accessibilityRole="button"
+                            onPress={() =>
+                              onSelectGame(expanded ? null : game.id)
+                            }
+                            style={{ marginBottom: 10 }}
+                          >
+                            <Text
+                              selectable
                               style={{
-                                flexDirection: "row",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                gap: 8,
+                                fontFamily: "geistBold",
+                                fontSize: 18,
+                                textTransform: "uppercase",
+                                color: setupColors.border,
                               }}
                             >
-                              <Pressable
-                                accessibilityRole="button"
-                                onPress={() =>
-                                  onSelectGame(expanded ? null : game.id)
-                                }
-                                style={{ flex: 1 }}
-                              >
-                                <BrutalText
-                                  selectable
+                              {game.name}
+                            </Text>
+                            <Text
+                              selectable
+                              style={{
+                                fontFamily: "geistRegular",
+                                fontSize: 13,
+                                color: setupColors.sectionText,
+                                marginTop: 2,
+                              }}
+                            >
+                              {new Date(game.dateIso).toLocaleDateString()} •{" "}
+                              {game.players.length} players
+                            </Text>
+                          </Pressable>
+
+                          <View
+                            style={{
+                              flexDirection: "row",
+                              gap: 10,
+                              borderTopWidth: 4,
+                              borderTopColor: setupColors.border,
+                              paddingTop: 10,
+                            }}
+                          >
+                            <View style={{ flex: 1 }}>
+                              <ShadowFrame shadowOffset={3}>
+                                <Pressable
+                                  accessibilityRole="button"
+                                  onPress={() => onLoadGame(game.id)}
                                   style={{
-                                    fontFamily: tokens.typography.heading,
-                                    fontSize: 16,
-                                    textTransform: "uppercase",
+                                    borderWidth: 3,
+                                    borderColor: setupColors.border,
+                                    backgroundColor: setupColors.blue,
+                                    paddingVertical: 10,
+                                    alignItems: "center",
                                   }}
                                 >
-                                  {game.name}
-                                </BrutalText>
-                                <BrutalText selectable style={{ fontSize: 12 }}>
-                                  {new Date(game.dateIso).toLocaleDateString()}{" "}
-                                  • {game.players.length} players
-                                </BrutalText>
-                              </Pressable>
-
-                              <View style={{ flexDirection: "row", gap: 8 }}>
-                                <BrutalButton
-                                  color={tokens.color.blue}
-                                  label="Load"
-                                  onPress={() => onLoadGame(game.id)}
-                                />
-                                <BrutalButton
-                                  color={tokens.color.red}
-                                  label="Del"
-                                  onPress={() => onDeleteGame(game.id)}
-                                />
-                              </View>
+                                  <Text
+                                    style={{
+                                      fontFamily: "geistBold",
+                                      fontSize: 14,
+                                      textTransform: "uppercase",
+                                      color: setupColors.border,
+                                    }}
+                                  >
+                                    Load
+                                  </Text>
+                                </Pressable>
+                              </ShadowFrame>
                             </View>
-                          </BrutalCard>
 
-                          {expanded ? (
-                            <ScoreTable
-                              currentRound={game.settings.currentRound}
-                              players={getSortedPlayersForGame(game)}
-                              teams={game.teams}
-                              title={`${game.name} Rounds`}
-                            />
-                          ) : null}
+                            <View style={{ flex: 1 }}>
+                              <ShadowFrame shadowOffset={3}>
+                                <Pressable
+                                  accessibilityRole="button"
+                                  onPress={() => onDeleteGame(game.id)}
+                                  style={{
+                                    borderWidth: 3,
+                                    borderColor: setupColors.border,
+                                    backgroundColor: setupColors.red,
+                                    paddingVertical: 10,
+                                    alignItems: "center",
+                                  }}
+                                >
+                                  <Text
+                                    style={{
+                                      fontFamily: "geistBold",
+                                      fontSize: 14,
+                                      textTransform: "uppercase",
+                                      color: "#FFFFFF",
+                                    }}
+                                  >
+                                    Delete
+                                  </Text>
+                                </Pressable>
+                              </ShadowFrame>
+                            </View>
+                          </View>
                         </View>
-                      );
-                    })}
-                  </>
-                ) : (
-                  <BrutalCard>
-                    <BrutalText selectable>No previous games</BrutalText>
-                  </BrutalCard>
-                )}
-              </View>
-            )}
-          </ScrollView>
-        </BrutalCard>
+                      </ShadowFrame>
 
-        <Pressable
-          accessibilityRole="button"
-          onPress={onClose}
-          style={{ flex: 1 }}
-        />
-      </View>
-    </Modal>
+                      {expanded ? (
+                        <View style={{ marginLeft: 12 }}>
+                          <ScoreTable
+                            currentRound={game.settings.currentRound}
+                            players={getSortedPlayersForGame(game)}
+                            teams={game.teams}
+                            title={`${game.name} Rounds`}
+                          />
+                        </View>
+                      ) : null}
+                    </View>
+                  );
+                })}
+              </>
+            ) : (
+              <ShadowFrame>
+                <View
+                  style={{
+                    borderWidth: 4,
+                    borderColor: setupColors.border,
+                    backgroundColor: setupColors.surface,
+                    padding: 20,
+                    alignItems: "center",
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontFamily: "geistBold",
+                      fontSize: 18,
+                      textTransform: "uppercase",
+                      color: setupColors.sectionText,
+                    }}
+                  >
+                    No previous games
+                  </Text>
+                </View>
+              </ShadowFrame>
+            )}
+          </View>
+        )}
+      </ScrollView>
+    </View>
+  );
+}
+
+function ShadowFrame({
+  children,
+  shadowOffset = 5,
+}: {
+  children: React.ReactNode;
+  shadowOffset?: number;
+}) {
+  return (
+    <View style={{ marginRight: shadowOffset, marginBottom: shadowOffset }}>
+      <View
+        style={{
+          position: "absolute",
+          top: shadowOffset,
+          left: shadowOffset,
+          right: -shadowOffset,
+          bottom: -shadowOffset,
+          backgroundColor: setupColors.border,
+        }}
+      />
+      {children}
+    </View>
   );
 }
