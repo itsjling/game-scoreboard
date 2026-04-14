@@ -1,0 +1,67 @@
+appId: com.justinling.gamescoreboard
+---
+# Verify the History screen UI renders correctly and delete functionality works
+
+# --- Setup: add players and start a game to generate history ---
+- assertVisible: "Start Game"
+- tapOn: "Player name"
+- inputText: "Alice"
+- tapOn: "Add"
+- assertVisible: "Alice"
+
+- tapOn: "Player name"
+- inputText: "Bob"
+- tapOn: "Add"
+- assertVisible: "Bob"
+
+- tapOn: "Start Game"
+- assertVisible: "Edit Game"
+
+# Score a round so the game has data
+- tapOn: "+1"
+
+# Start a new game so the previous one goes to history
+- tapOn: "Edit Game"
+- tapOn: "New Game"
+
+# Add another player and start a second game for more history
+- tapOn: "Player name"
+- inputText: "Charlie"
+- tapOn: "Add"
+- tapOn: "Start Game"
+- tapOn: "Edit Game"
+- tapOn: "New Game"
+
+# --- Test: open history screen ---
+- tapOn: "History"
+- assertVisible: "History"
+- assertVisible: "Back"
+
+# Verify the tab buttons are present
+- assertVisible: "Current"
+- assertVisible: "Previous"
+
+# --- Test: switch to Previous tab and verify game entries ---
+- tapOn: "Previous"
+- assertVisible: "Clear All History"
+- assertVisible: "2 players"
+- assertVisible: "1 players"
+- assertVisible: "Load"
+- assertVisible: "Delete"
+
+# --- Test: delete a game entry ---
+- tapOn:
+    text: "Delete"
+    index: 0
+
+# Verify the entry is removed (only one game left)
+- assertVisible: "Load"
+- assertVisible: "Delete"
+
+# --- Test: clear all history ---
+- tapOn: "Clear All History"
+- assertVisible: "No previous games"
+
+# --- Test: navigate back ---
+- tapOn: "Back"
+- assertNotVisible: "History"
