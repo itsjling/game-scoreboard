@@ -1,6 +1,19 @@
 {
   "cleanUrls": true,
   "framework": null,
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "destination": "https://scoreboard.justinling.dev/$1",
+      "permanent": true,
+      "has": [
+        {
+          "type": "host",
+          "value": "scoreboard.justinling.tech"
+        }
+      ]
+    }
+  ],
   "rewrites": [
     {
       "source": "/:path*",
