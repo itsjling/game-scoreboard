@@ -47,7 +47,12 @@ import {
   getTeamName,
   getTeamScores,
 } from "@/features/scoreboard/selectors";
-import type { GameSnapshot, Player, Team } from "@/features/scoreboard/types";
+import type {
+  ActiveGame,
+  GameSnapshot,
+  Player,
+  Team,
+} from "@/features/scoreboard/types";
 import { analyticsEvents } from "@/services/analytics/events";
 import { analytics } from "@/services/analytics/posthog-client";
 import { BrutalText } from "@/theme/neo-brutal/primitives";
@@ -260,6 +265,10 @@ export const ScoreboardScreen: FC = function ScoreboardScreen() {
     dispatch(scoreboardActions.setPlayerColor(playerId, color));
   };
 
+  const removePlayer = (playerId: string) => {
+    dispatch(scoreboardActions.removePlayer(playerId));
+  };
+
   const cyclePlayerTeam = (player: Player) => {
     if (active.teams.length === 0) {
       return;
@@ -447,293 +456,38 @@ export const ScoreboardScreen: FC = function ScoreboardScreen() {
         <View style={{ height: 5, backgroundColor: setupColors.border }} />
 
         {active.started ? (
-          <View
-            style={{
-              minHeight: setupBodyMinHeight,
-              justifyContent: "space-between",
-            }}
-          >
-            <View
-              style={{
-                paddingHorizontal: isCompact ? 12 : 16,
-                paddingVertical: 8,
-                gap: 4,
-              }}
-            >
-              <RoundHeader
-                _canGoNext={canGoNextRound}
-                _canGoPrevious={active.settings.currentRound > 1}
-                _onNextRound={goNextRound}
-                _onPreviousRound={goPreviousRound}
-                currentRound={active.settings.currentRound}
-                isTeamMode={active.settings.enableTeams}
-                numberOfRounds={active.settings.numberOfRounds}
-                onClose={toggleStarted}
-                onShowHistory={() => setHistoryVisible(true)}
-              />
-
-              <View
-                style={{
-                  height: 4,
-                  backgroundColor: "#000000",
-                  marginVertical: 8,
-                }}
-              />
-
-              {active.settings.enableTeams ? (
-                <View style={{ gap: 0, paddingTop: 8 }}>
-                  {Object.entries(playersByTeam).map(([teamKey, players]) => {
-                    const teamId = teamKey === "no-team" ? null : teamKey;
-                    const team = active.teams.find(
-                      (entry) => entry.id === teamId
-                    );
-
-                    return (
-                      <TeamSection
-                        _onRemove={(playerId: string) =>
-                          dispatch(scoreboardActions.removePlayer(playerId))
-                        }
-                        color={team?.color ?? setupColors.muted}
-                        displayScoreById={displayScoresById}
-                        gameStarted={active.started}
-                        key={teamKey}
-                        onIncrement={updateScore}
-                        onSetExactScore={setExactScore}
-                        players={players}
-                        title={getTeamName(active.teams, teamId)}
-                        totalScore={teamScores[teamKey] ?? 0}
-                      />
-                    );
-                  })}
-                </View>
-              ) : (
-                <View style={{ gap: 0, paddingTop: 8 }}>
-                  {sortedPlayers.map((player) => (
-                    <PlayerCard
-                      _onRemove={(playerId: string) =>
-                        dispatch(scoreboardActions.removePlayer(playerId))
-                      }
-                      displayScore={displayScoresById[player.id] ?? 0}
-                      gameStarted={active.started}
-                      key={player.id}
-                      onIncrement={updateScore}
-                      onSetExactScore={setExactScore}
-                      player={player}
-                    />
-                  ))}
-                </View>
-              )}
-            </View>
-
-            <View
-              style={{
-                borderTopWidth: 4,
-                borderTopColor: "#000000",
-                marginTop: 16,
-              }}
-            >
-              <RoundNavigation
-                canGoNext={canGoNextRound}
-                canGoPrevious={active.settings.currentRound > 1}
-                onNextRound={goNextRound}
-                onPreviousRound={goPreviousRound}
-              />
-            </View>
-          </View>
+          <ScoreboardActiveGameContent
+            active={active}
+            canGoNextRound={canGoNextRound}
+            displayScoresById={displayScoresById}
+            isCompact={isCompact}
+            onNextRound={goNextRound}
+            onPreviousRound={goPreviousRound}
+            onRemovePlayer={removePlayer}
+            onSetExactScore={setExactScore}
+            onShowHistory={() => setHistoryVisible(true)}
+            onToggleStarted={toggleStarted}
+            onUpdateScore={updateScore}
+            playersByTeam={playersByTeam}
+            setupBodyMinHeight={setupBodyMinHeight}
+            sortedPlayers={sortedPlayers}
+            teamScores={teamScores}
+          />
         ) : (
-          <View
-            style={{
-              minHeight: setupBodyMinHeight,
-              justifyContent: "space-between",
-            }}
-          >
-            <View
-              style={{
-                paddingHorizontal: isCompact ? 12 : 16,
-                paddingVertical: 12,
-                gap: 14,
-              }}
-            >
-              {active.settings.enableTeams ? (
-                <>
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      gap: 8,
-                    }}
-                  >
-                    <SectionHeading label="Team Assignment" />
-                    <View
-                      style={{
-                        borderWidth: 4,
-                        borderColor: setupColors.border,
-                        backgroundColor: setupColors.border,
-                        paddingHorizontal: 10,
-                        paddingVertical: 6,
-                      }}
-                    >
-                      <BrutalText
-                        style={{
-                          fontFamily: tokens.typography.heading,
-                          color: "#FFFFFF",
-                          textTransform: "uppercase",
-                          fontSize: 18,
-                        }}
-                      >
-                        Teams Mode On
-                      </BrutalText>
-                    </View>
-                  </View>
-
-                  {active.teams.map((team, index) => (
-                    <TeamAssignmentBox
-                      borderColor={
-                        index % 2 === 0 ? setupColors.yellow : setupColors.green
-                      }
-                      key={team.id}
-                      playerCount={playersByTeam[team.id]?.length ?? 0}
-                      team={team}
-                    >
-                      {(playersByTeam[team.id] ?? []).map((player) => (
-                        <TeamPlayerRow
-                          key={player.id}
-                          onLongPress={() => cyclePlayerTeam(player)}
-                          onNameChange={updatePlayerName}
-                          player={player}
-                        />
-                      ))}
-                      {(playersByTeam[team.id] ?? []).length === 0 ? (
-                        <View
-                          style={{
-                            borderWidth: 4,
-                            borderStyle: "dashed",
-                            borderColor: setupColors.muted,
-                            paddingVertical: 18,
-                            alignItems: "center",
-                          }}
-                        >
-                          <BrutalText
-                            style={{
-                              fontFamily: tokens.typography.heading,
-                              textTransform: "uppercase",
-                              color: setupColors.muted,
-                              fontSize: 22,
-                            }}
-                          >
-                            Drop Player Here
-                          </BrutalText>
-                        </View>
-                      ) : null}
-                    </TeamAssignmentBox>
-                  ))}
-
-                  {(playersByTeam["no-team"] ?? []).length > 0 ? (
-                    <TeamAssignmentBox
-                      borderColor="#979AA3"
-                      playerCount={playersByTeam["no-team"]?.length ?? 0}
-                      team={{
-                        id: "no-team",
-                        name: "No Team",
-                        color: "#D4D5D8",
-                      }}
-                    >
-                      {(playersByTeam["no-team"] ?? []).map((player) => (
-                        <TeamPlayerRow
-                          key={player.id}
-                          onLongPress={() => cyclePlayerTeam(player)}
-                          onNameChange={updatePlayerName}
-                          player={player}
-                        />
-                      ))}
-                    </TeamAssignmentBox>
-                  ) : null}
-
-                  <ShadowActionButton
-                    color="#FFFFFF"
-                    icon={UserPlus}
-                    label="Add Player"
-                    onPress={addPlayer}
-                    textColor={setupColors.border}
-                  />
-                </>
-              ) : (
-                <>
-                  <SectionHeading label="Current Players" />
-
-                  {active.players.map((player, index) => (
-                    <EditablePlayerRow
-                      index={index}
-                      key={player.id}
-                      onChangeName={updatePlayerName}
-                      onCycleColor={(playerId, currentColor) =>
-                        updatePlayerColor(
-                          playerId,
-                          getNextAccentColor(currentColor)
-                        )
-                      }
-                      onRemove={(playerId) =>
-                        dispatch(scoreboardActions.removePlayer(playerId))
-                      }
-                      player={player}
-                    />
-                  ))}
-
-                  <ShadowActionButton
-                    color={setupColors.cyan}
-                    icon={UserPlus}
-                    label="Add Player"
-                    onPress={addPlayer}
-                    textColor={setupColors.border}
-                  />
-                </>
-              )}
-            </View>
-
-            <View
-              style={{ borderTopWidth: 5, borderTopColor: setupColors.border }}
-            >
-              <View
-                style={{
-                  paddingHorizontal: isCompact ? 12 : 16,
-                  paddingVertical: 16,
-                  gap: 16,
-                }}
-              >
-                <ShadowActionButton
-                  color="#FFFFFF"
-                  icon={Settings}
-                  label="Advanced Settings"
-                  onPress={() => setSettingsVisible(true)}
-                  textColor={setupColors.border}
-                />
-
-                <ShadowActionButton
-                  color={active.started ? "#FFFFFF" : setupColors.yellow}
-                  disabled={!(active.started || canStartGame)}
-                  icon={active.started ? Edit3 : Play}
-                  label={active.started ? "Edit Game" : "Start Game"}
-                  onPress={toggleStarted}
-                  textColor={setupColors.border}
-                />
-
-                {canStartGame ? null : (
-                  <BrutalText
-                    style={{
-                      textAlign: "center",
-                      fontFamily: tokens.typography.heading,
-                      textTransform: "uppercase",
-                      color: setupColors.sectionText,
-                      fontSize: 17,
-                    }}
-                  >
-                    Add at least one player to start
-                  </BrutalText>
-                )}
-              </View>
-            </View>
-          </View>
+          <ScoreboardSetupGameContent
+            active={active}
+            canStartGame={canStartGame}
+            isCompact={isCompact}
+            onAddPlayer={addPlayer}
+            onCyclePlayerTeam={cyclePlayerTeam}
+            onOpenSettings={() => setSettingsVisible(true)}
+            onRemovePlayer={removePlayer}
+            onToggleStarted={toggleStarted}
+            onUpdatePlayerColor={updatePlayerColor}
+            onUpdatePlayerName={updatePlayerName}
+            playersByTeam={playersByTeam}
+            setupBodyMinHeight={setupBodyMinHeight}
+          />
         )}
       </View>
 
@@ -786,6 +540,356 @@ export const ScoreboardScreen: FC = function ScoreboardScreen() {
     </Screen>
   );
 };
+
+interface ScoreboardActiveGameContentProps {
+  active: ActiveGame;
+  canGoNextRound: boolean;
+  displayScoresById: Record<string, number>;
+  isCompact: boolean;
+  onNextRound: () => void;
+  onPreviousRound: () => void;
+  onRemovePlayer: (playerId: string) => void;
+  onSetExactScore: (playerId: string, score: number) => void;
+  onShowHistory: () => void;
+  onToggleStarted: () => void;
+  onUpdateScore: (playerId: string, delta: number) => void;
+  playersByTeam: Record<string, Player[]>;
+  setupBodyMinHeight: number;
+  sortedPlayers: Player[];
+  teamScores: Record<string, number>;
+}
+
+interface ScoreboardSetupGameContentProps {
+  active: ActiveGame;
+  canStartGame: boolean;
+  isCompact: boolean;
+  onAddPlayer: () => void;
+  onCyclePlayerTeam: (player: Player) => void;
+  onOpenSettings: () => void;
+  onRemovePlayer: (playerId: string) => void;
+  onToggleStarted: () => void;
+  onUpdatePlayerColor: (playerId: string, color: string) => void;
+  onUpdatePlayerName: (playerId: string, name: string) => void;
+  playersByTeam: Record<string, Player[]>;
+  setupBodyMinHeight: number;
+}
+
+function ScoreboardActiveGameContent({
+  active,
+  canGoNextRound,
+  displayScoresById,
+  isCompact,
+  onNextRound,
+  onPreviousRound,
+  onRemovePlayer,
+  onSetExactScore,
+  onShowHistory,
+  onToggleStarted,
+  onUpdateScore,
+  playersByTeam,
+  setupBodyMinHeight,
+  sortedPlayers,
+  teamScores,
+}: ScoreboardActiveGameContentProps) {
+  return (
+    <View
+      style={{
+        minHeight: setupBodyMinHeight,
+        justifyContent: "space-between",
+      }}
+    >
+      <View
+        style={{
+          paddingHorizontal: isCompact ? 12 : 16,
+          paddingVertical: 8,
+          gap: 4,
+        }}
+      >
+        <RoundHeader
+          _canGoNext={canGoNextRound}
+          _canGoPrevious={active.settings.currentRound > 1}
+          _onNextRound={onNextRound}
+          _onPreviousRound={onPreviousRound}
+          currentRound={active.settings.currentRound}
+          isTeamMode={active.settings.enableTeams}
+          numberOfRounds={active.settings.numberOfRounds}
+          onClose={onToggleStarted}
+          onShowHistory={onShowHistory}
+        />
+
+        <View
+          style={{
+            height: 4,
+            backgroundColor: "#000000",
+            marginVertical: 8,
+          }}
+        />
+
+        {active.settings.enableTeams ? (
+          <View style={{ gap: 0, paddingTop: 8 }}>
+            {Object.entries(playersByTeam).map(([teamKey, players]) => {
+              const teamId = teamKey === "no-team" ? null : teamKey;
+              const team = active.teams.find((entry) => entry.id === teamId);
+
+              return (
+                <TeamSection
+                  _onRemove={onRemovePlayer}
+                  color={team?.color ?? setupColors.muted}
+                  displayScoreById={displayScoresById}
+                  gameStarted={active.started}
+                  key={teamKey}
+                  onIncrement={onUpdateScore}
+                  onSetExactScore={onSetExactScore}
+                  players={players}
+                  title={getTeamName(active.teams, teamId)}
+                  totalScore={teamScores[teamKey] ?? 0}
+                />
+              );
+            })}
+          </View>
+        ) : (
+          <View style={{ gap: 0, paddingTop: 8 }}>
+            {sortedPlayers.map((player) => (
+              <PlayerCard
+                _onRemove={onRemovePlayer}
+                displayScore={displayScoresById[player.id] ?? 0}
+                gameStarted={active.started}
+                key={player.id}
+                onIncrement={onUpdateScore}
+                onSetExactScore={onSetExactScore}
+                player={player}
+              />
+            ))}
+          </View>
+        )}
+      </View>
+
+      <View
+        style={{
+          borderTopWidth: 4,
+          borderTopColor: "#000000",
+          marginTop: 16,
+        }}
+      >
+        <RoundNavigation
+          canGoNext={canGoNextRound}
+          canGoPrevious={active.settings.currentRound > 1}
+          onNextRound={onNextRound}
+          onPreviousRound={onPreviousRound}
+        />
+      </View>
+    </View>
+  );
+}
+
+function ScoreboardSetupGameContent({
+  active,
+  canStartGame,
+  isCompact,
+  onAddPlayer,
+  onCyclePlayerTeam,
+  onOpenSettings,
+  onRemovePlayer,
+  onToggleStarted,
+  onUpdatePlayerColor,
+  onUpdatePlayerName,
+  playersByTeam,
+  setupBodyMinHeight,
+}: ScoreboardSetupGameContentProps) {
+  const { tokens } = useNeoBrutalTheme();
+
+  return (
+    <View
+      style={{
+        minHeight: setupBodyMinHeight,
+        justifyContent: "space-between",
+      }}
+    >
+      <View
+        style={{
+          paddingHorizontal: isCompact ? 12 : 16,
+          paddingVertical: 12,
+          gap: 14,
+        }}
+      >
+        {active.settings.enableTeams ? (
+          <>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 8,
+              }}
+            >
+              <SectionHeading label="Team Assignment" />
+              <View
+                style={{
+                  borderWidth: 4,
+                  borderColor: setupColors.border,
+                  backgroundColor: setupColors.border,
+                  paddingHorizontal: 10,
+                  paddingVertical: 6,
+                }}
+              >
+                <BrutalText
+                  style={{
+                    fontFamily: tokens.typography.heading,
+                    color: "#FFFFFF",
+                    textTransform: "uppercase",
+                    fontSize: 18,
+                  }}
+                >
+                  Teams Mode On
+                </BrutalText>
+              </View>
+            </View>
+
+            {active.teams.map((team, index) => (
+              <TeamAssignmentBox
+                borderColor={
+                  index % 2 === 0 ? setupColors.yellow : setupColors.green
+                }
+                key={team.id}
+                playerCount={playersByTeam[team.id]?.length ?? 0}
+                team={team}
+              >
+                {(playersByTeam[team.id] ?? []).map((player) => (
+                  <TeamPlayerRow
+                    key={player.id}
+                    onLongPress={() => onCyclePlayerTeam(player)}
+                    onNameChange={onUpdatePlayerName}
+                    player={player}
+                  />
+                ))}
+                {(playersByTeam[team.id] ?? []).length === 0 ? (
+                  <View
+                    style={{
+                      borderWidth: 4,
+                      borderStyle: "dashed",
+                      borderColor: setupColors.muted,
+                      paddingVertical: 18,
+                      alignItems: "center",
+                    }}
+                  >
+                    <BrutalText
+                      style={{
+                        fontFamily: tokens.typography.heading,
+                        textTransform: "uppercase",
+                        color: setupColors.muted,
+                        fontSize: 22,
+                      }}
+                    >
+                      Drop Player Here
+                    </BrutalText>
+                  </View>
+                ) : null}
+              </TeamAssignmentBox>
+            ))}
+
+            {(playersByTeam["no-team"] ?? []).length > 0 ? (
+              <TeamAssignmentBox
+                borderColor="#979AA3"
+                playerCount={playersByTeam["no-team"]?.length ?? 0}
+                team={{
+                  id: "no-team",
+                  name: "No Team",
+                  color: "#D4D5D8",
+                }}
+              >
+                {(playersByTeam["no-team"] ?? []).map((player) => (
+                  <TeamPlayerRow
+                    key={player.id}
+                    onLongPress={() => onCyclePlayerTeam(player)}
+                    onNameChange={onUpdatePlayerName}
+                    player={player}
+                  />
+                ))}
+              </TeamAssignmentBox>
+            ) : null}
+
+            <ShadowActionButton
+              color="#FFFFFF"
+              icon={UserPlus}
+              label="Add Player"
+              onPress={onAddPlayer}
+              textColor={setupColors.border}
+            />
+          </>
+        ) : (
+          <>
+            <SectionHeading label="Current Players" />
+
+            {active.players.map((player, index) => (
+              <EditablePlayerRow
+                index={index}
+                key={player.id}
+                onChangeName={onUpdatePlayerName}
+                onCycleColor={(playerId, currentColor) =>
+                  onUpdatePlayerColor(
+                    playerId,
+                    getNextAccentColor(currentColor)
+                  )
+                }
+                onRemove={onRemovePlayer}
+                player={player}
+              />
+            ))}
+
+            <ShadowActionButton
+              color={setupColors.cyan}
+              icon={UserPlus}
+              label="Add Player"
+              onPress={onAddPlayer}
+              textColor={setupColors.border}
+            />
+          </>
+        )}
+      </View>
+
+      <View style={{ borderTopWidth: 5, borderTopColor: setupColors.border }}>
+        <View
+          style={{
+            paddingHorizontal: isCompact ? 12 : 16,
+            paddingVertical: 16,
+            gap: 16,
+          }}
+        >
+          <ShadowActionButton
+            color="#FFFFFF"
+            icon={Settings}
+            label="Advanced Settings"
+            onPress={onOpenSettings}
+            textColor={setupColors.border}
+          />
+
+          <ShadowActionButton
+            color={active.started ? "#FFFFFF" : setupColors.yellow}
+            disabled={!(active.started || canStartGame)}
+            icon={active.started ? Edit3 : Play}
+            label={active.started ? "Edit Game" : "Start Game"}
+            onPress={onToggleStarted}
+            textColor={setupColors.border}
+          />
+
+          {canStartGame ? null : (
+            <BrutalText
+              style={{
+                textAlign: "center",
+                fontFamily: tokens.typography.heading,
+                textTransform: "uppercase",
+                color: setupColors.sectionText,
+                fontSize: 17,
+              }}
+            >
+              Add at least one player to start
+            </BrutalText>
+          )}
+        </View>
+      </View>
+    </View>
+  );
+}
 
 function SectionHeading({ label }: { label: string }) {
   const { tokens } = useNeoBrutalTheme();

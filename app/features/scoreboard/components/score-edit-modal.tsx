@@ -120,21 +120,24 @@ export function ScoreEditModal({
 
   const handleBackspace = useCallback(() => {
     if (inputValue.length > 0) {
-      // Delete last digit of current input
       const newValue = inputValue.slice(0, -1);
       setInputValue(newValue);
     } else if (pendingOperator) {
-      // Remove the pending operator and restore the last operation if any
       setPendingOperator(null);
       if (operations.length > 0) {
         const lastOp = operations.at(-1);
+        if (!lastOp) {
+          return;
+        }
         setOperations((prev) => prev.slice(0, -1));
         setPendingOperator(lastOp.operator);
         setInputValue(String(lastOp.value));
       }
     } else if (operations.length > 0) {
-      // Remove the last completed operation and restore as pending
       const lastOp = operations.at(-1);
+      if (!lastOp) {
+        return;
+      }
       setOperations((prev) => prev.slice(0, -1));
       setPendingOperator(lastOp.operator);
       setInputValue(String(lastOp.value));
