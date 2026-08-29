@@ -2,8 +2,8 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import Config from "@/config";
+import { ScoreboardScreen } from "@/features/scoreboard/components/scoreboard-screen";
 import { ErrorBoundary } from "@/screens/ErrorScreen/error-boundary";
-import { ScoreboardScreen } from "@/screens/scoreboard-screen";
 import { useAppTheme } from "@/theme/context";
 
 import type { AppStackParamList, NavigationProps } from "./navigation-types";

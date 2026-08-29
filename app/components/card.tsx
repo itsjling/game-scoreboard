@@ -11,9 +11,9 @@ import {
 
 import { useAppTheme } from "@/theme/context";
 import { $styles } from "@/theme/styles";
-import type { ThemedStyle, ThemedStyleArray } from "@/theme/types";
+import type { ThemedFnT, ThemedStyle, ThemedStyleArray } from "@/theme/types";
 
-import { Text, type TextProps } from "./Text";
+import { Text, type TextProps } from "./text";
 
 type Presets = "default" | "reversed";
 
@@ -132,7 +132,7 @@ interface CardProps extends TouchableOpacityProps {
  * @returns {JSX.Element} The rendered `Card` component.
  */
 function computeCardStyleProps(
-  themed: <T>(style: T) => StyleProp<T>,
+  themed: ThemedFnT,
   preset: Presets,
   spacing: { xxxs: number; md: number },
   isHeadingPresent: boolean,

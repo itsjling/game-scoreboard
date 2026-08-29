@@ -191,8 +191,8 @@ function SwitchInput(props: SwitchInputProps) {
         ]}
       />
 
-      <SwitchAccessibilityLabel {...props} />
-      <SwitchAccessibilityLabel {...props} />
+      <SwitchAccessibilityLabel {...props} labelRole="on" />
+      <SwitchAccessibilityLabel {...props} labelRole="off" />
 
       <Animated.View
         style={[
@@ -207,19 +207,15 @@ function SwitchInput(props: SwitchInputProps) {
   );
 }
 
-/**
- * @param {ToggleInputProps & { role: "on" | "off" }} props - The props for the `SwitchAccessibilityLabel` component.
- * @returns {JSX.Element} The rendered `SwitchAccessibilityLabel` component.
- */
 function SwitchAccessibilityLabel(
-  props: SwitchInputProps & { role: "on" | "off" }
+  props: SwitchInputProps & { labelRole: "on" | "off" }
 ) {
   const {
     on,
     disabled,
     status,
     accessibilityMode,
-    role,
+    labelRole,
     innerStyle,
     detailStyle,
   } = props;
@@ -232,12 +228,13 @@ function SwitchAccessibilityLabel(
     return null;
   }
 
-  const shouldLabelBeVisible = (on && role === "on") || (!on && role === "off");
+  const shouldLabelBeVisible =
+    (on && labelRole === "on") || (!on && labelRole === "off");
 
   const $switchAccessibilityStyle: StyleProp<ViewStyle> = [
     $switchAccessibility,
-    role === "off" && { end: "5%" },
-    role === "on" && { left: "5%" },
+    labelRole === "off" && { end: "5%" },
+    labelRole === "on" && { left: "5%" },
   ];
 
   const color = (() => {
@@ -258,17 +255,17 @@ function SwitchAccessibilityLabel(
       {accessibilityMode === "text" && shouldLabelBeVisible && (
         <View
           style={[
-            role === "on" && $switchAccessibilityLine,
-            role === "on" && { backgroundColor: color },
-            role === "off" && $switchAccessibilityCircle,
-            role === "off" && { borderColor: color },
+            labelRole === "on" && $switchAccessibilityLine,
+            labelRole === "on" && { backgroundColor: color },
+            labelRole === "off" && $switchAccessibilityCircle,
+            labelRole === "off" && { borderColor: color },
           ]}
         />
       )}
 
       {accessibilityMode === "icon" && shouldLabelBeVisible && (
         <Image
-          source={role === "off" ? iconRegistry.hidden : iconRegistry.view}
+          source={labelRole === "off" ? iconRegistry.hidden : iconRegistry.view}
           style={[$switchAccessibilityIcon, { tintColor: color }]}
         />
       )}

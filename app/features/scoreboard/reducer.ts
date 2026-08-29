@@ -101,6 +101,72 @@ function computeDisplayDelta(
   return targetScore - currentDisplayScore;
 }
 
+function reduceSetPlayerExactScore(
+  state: ScoreboardState,
+  action: Extract<ScoreboardAction, { type: "set-player-exact-score" }>
+): ScoreboardState {
+  const active = state.activeGame;
+
+  if (!active.settings.showPerRoundScores) {
+    const delta = computeDisplayDelta(
+      active.players,
+      active.settings,
+      action.payload.playerId,
+      action.payload.score
+    );
+    return scoreboardReducer(state, {
+      type: "increment-player-score",
+      payload: {
+        playerId: action.payload.playerId,
+        delta,
+      },
+    });
+  }
+
+  return withActiveGame(state, {
+    ...active,
+    players: active.players.map((player) => {
+      if (player.id !== action.payload.playerId) {
+        return player;
+      }
+      const hydrated = ensureScoreLength(player, active.settings.currentRound);
+      const scores = [...hydrated.scores];
+      scores[active.settings.currentRound - 1] = action.payload.score;
+      return {
+        ...hydrated,
+        scores,
+      };
+    }),
+  });
+}
+
+function reduceAddTeam(
+  state: ScoreboardState,
+  action: Extract<ScoreboardAction, { type: "add-team" }>
+): ScoreboardState {
+  const active = state.activeGame;
+  const teamName = action.payload.name.trim();
+  const hasExistingTeam = active.teams.some(
+    (team) => team.name.toLowerCase() === teamName.toLowerCase()
+  );
+
+  if (!teamName || hasExistingTeam) {
+    return state;
+  }
+
+  return withActiveGame(state, {
+    ...active,
+    teams: [
+      ...active.teams,
+      {
+        id: createEntityId("team"),
+        name: teamName,
+        color: action.payload.color,
+      },
+    ],
+  });
+}
+
 export function scoreboardReducer(
   state: ScoreboardState,
   action: ScoreboardAction
@@ -183,7 +249,7 @@ export function scoreboardReducer(
           active.settings.enableTeams && action.payload.teamId
             ? getTeamColor(active.teams, action.payload.teamId)
             : action.payload.color,
-        scores: Array(active.settings.currentRound).fill(0),
+        scores: new Array(active.settings.currentRound).fill(0),
         teamId: active.settings.enableTeams ? action.payload.teamId : null,
       };
 
@@ -265,65 +331,11 @@ export function scoreboardReducer(
         }),
       });
 
-    case "set-player-exact-score": {
-      if (!active.settings.showPerRoundScores) {
-        const delta = computeDisplayDelta(
-          active.players,
-          active.settings,
-          action.payload.playerId,
-          action.payload.score
-        );
-        return scoreboardReducer(state, {
-          type: "increment-player-score",
-          payload: {
-            playerId: action.payload.playerId,
-            delta,
-          },
-        });
-      }
+    case "set-player-exact-score":
+      return reduceSetPlayerExactScore(state, action);
 
-      return withActiveGame(state, {
-        ...active,
-        players: active.players.map((player) => {
-          if (player.id !== action.payload.playerId) {
-            return player;
-          }
-          const hydrated = ensureScoreLength(
-            player,
-            active.settings.currentRound
-          );
-          const scores = [...hydrated.scores];
-          scores[active.settings.currentRound - 1] = action.payload.score;
-          return {
-            ...hydrated,
-            scores,
-          };
-        }),
-      });
-    }
-
-    case "add-team": {
-      const teamName = action.payload.name.trim();
-      if (
-        !teamName ||
-        active.teams.some(
-          (team) => team.name.toLowerCase() === teamName.toLowerCase()
-        )
-      ) {
-        return state;
-      }
-      return withActiveGame(state, {
-        ...active,
-        teams: [
-          ...active.teams,
-          {
-            id: createEntityId("team"),
-            name: teamName,
-            color: action.payload.color,
-          },
-        ],
-      });
-    }
+    case "add-team":
+      return reduceAddTeam(state, action);
 
     case "remove-team":
       return withActiveGame(state, {
