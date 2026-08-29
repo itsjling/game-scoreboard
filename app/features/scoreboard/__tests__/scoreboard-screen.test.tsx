@@ -94,4 +94,20 @@ describe("ScoreboardScreen", () => {
     const { getByText } = render(<ScoreboardScreen />);
     expect(getByText("Start Game")).toBeTruthy();
   });
+
+  it("opens settings from an active game", () => {
+    const { getByLabelText, getByRole, getByText } = render(
+      <ScoreboardScreen />
+    );
+
+    fireEvent.press(getByText("Add Player"));
+    fireEvent.changeText(getByLabelText("Player name 1"), "Alex");
+    fireEvent.press(getByText("Start Game"));
+
+    fireEvent.press(getByLabelText("Open settings"));
+
+    expect(getByRole("radio", { name: "Name" })).toBeTruthy();
+    expect(getByRole("radio", { name: "High score first" })).toBeTruthy();
+    expect(getByRole("radio", { name: "Low score first" })).toBeTruthy();
+  });
 });

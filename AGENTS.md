@@ -124,3 +124,17 @@ Biome's linter will catch most issues automatically. Focus your attention on:
 ---
 
 Most formatting and common issues are automatically fixed by Biome. Run `pnpm dlx ultracite fix` before committing to ensure compliance.
+
+## Agent skills
+
+### Issue tracker
+
+Track issues and specs in GitHub Issues. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Use the standard five-label triage set. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Use the single-context domain layout. See `docs/agents/domain.md`.
