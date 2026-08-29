@@ -1,4 +1,7 @@
 import {
+  ArrowDownAZ,
+  ArrowDownWideNarrow,
+  ArrowUpNarrowWide,
   BarChart3,
   Infinity as InfinityIcon,
   List,
@@ -127,7 +130,11 @@ export function SettingsModal({
               Settings
             </BrutalText>
           </View>
-          <IconTile icon={X} onPress={onClose} />
+          <IconTile
+            accessibilityLabel="Close settings"
+            icon={X}
+            onPress={onClose}
+          />
         </View>
 
         <ScrollView
@@ -234,6 +241,36 @@ export function SettingsModal({
               selected={!draftShowPerRound}
               title="Total Score"
             />
+          </View>
+
+          <TiltLabel label="Sort Players" />
+          <View
+            accessibilityLabel="Sort players"
+            accessibilityRole="radiogroup"
+          >
+            <View style={{ gap: 18 }}>
+              <SelectableModeCard
+                body="Alphabetical player names."
+                icon={ArrowDownAZ}
+                onPress={() => setDraftSortBy("name")}
+                selected={draftSortBy === "name"}
+                title="Name"
+              />
+              <SelectableModeCard
+                body="Highest score at the top."
+                icon={ArrowDownWideNarrow}
+                onPress={() => setDraftSortBy("score-desc")}
+                selected={draftSortBy === "score-desc"}
+                title="High score first"
+              />
+              <SelectableModeCard
+                body="Lowest score at the top."
+                icon={ArrowUpNarrowWide}
+                onPress={() => setDraftSortBy("score-asc")}
+                selected={draftSortBy === "score-asc"}
+                title="Low score first"
+              />
+            </View>
           </View>
         </ScrollView>
 
@@ -404,6 +441,7 @@ function SelectableModeCard({
 
   return (
     <Pressable
+      accessibilityLabel={title}
       accessibilityRole="radio"
       accessibilityState={{ selected }}
       onPress={onPress}
@@ -515,9 +553,11 @@ function ShadowButton({
 }
 
 function IconTile({
+  accessibilityLabel,
   icon,
   onPress,
 }: {
+  accessibilityLabel: string;
   icon: LucideIcon;
   onPress: () => void;
 }) {
@@ -536,6 +576,7 @@ function IconTile({
         }}
       />
       <Pressable
+        accessibilityLabel={accessibilityLabel}
         accessibilityRole="button"
         onPress={onPress}
         style={{

@@ -413,7 +413,14 @@ export const ScoreboardScreen: FC = function ScoreboardScreen() {
             )}
           </View>
 
-          {!active.started && (
+          {active.started ? (
+            <SetupIconButton
+              accessibilityLabel="Open settings"
+              color={setupColors.cyan}
+              icon={Settings}
+              onPress={() => setSettingsVisible(true)}
+            />
+          ) : (
             <View style={{ flexDirection: "row", gap: 10 }}>
               <SetupIconButton
                 accessibilityLabel="Edit game name"
